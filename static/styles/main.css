@@ -43,8 +43,8 @@ span.h3  {
   margin: .83em 0
 }
 
-div#backgroud_overlapping_layer {
-/*  background: transparent url(../images/layout/vertical_fade_bg.png) repeat-x;*/
+/*div#backgroud_overlapping_layer {
+  background: transparent url(../images/layout/vertical_fade_bg.png) repeat-x;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -53,13 +53,13 @@ div#backgroud_overlapping_layer {
   left: 0px;
   z-index: -1;
   
-}
+}*/
+
 div#body {
   height:      100%;
   min-width:  900px;
   width:       100%;
-  background: transparent url(../images/layout/vertical_fade_bg.png) repeat-x;
-  
+  /*background: transparent url(../images/layout/vertical_fade_bg.png) repeat-x;*/
 }
 
 #layout_glass_wrapper {
@@ -99,32 +99,32 @@ div#body {
   vertical-align: middle;
 }
 #layout_glass_top_right {
-  background: transparent url(..//images/layout/glass_top_right_corner.png) no-repeat right top;
+  background: transparent url(../images/layout/glass_top_right_corner.png) no-repeat right top;
   height: 32px;
   width:  10px;
 }
 #layout_glass_bottom_left {
-  background: transparent url(..//images/layout/glass_bottom_left_corner.png) no-repeat left bottom;
+  background: transparent url(../images/layout/glass_bottom_left_corner.png) no-repeat left bottom;
   height: 10px;
 }
 #layout_glass_bottom_center {
-  background: transparent url(..//images/layout/glass_bottom_center.png) repeat-x left bottom;
+  background: transparent url(../images/layout/glass_bottom_center.png) repeat-x left bottom;
   height: 10px;
 }
 #layout_glass_bottom_right {
-  background: transparent url(..//images/layout/glass_bottom_right_corner.png) no-repeat right bottom;
+  background: transparent url(../images/layout/glass_bottom_right_corner.png) no-repeat right bottom;
   height: 10px;
 }
 #layout_glass_middle_left {
-  background: transparent url(..//images/layout/glass_middle_left.png) repeat-y left top;
+  background: transparent url(../images/layout/glass_middle_left.png) repeat-y left top;
   height: 10px;
 }
 #layout_glass_middle_right {
-  background: transparent url(..//images/layout/glass_middle_right.png) repeat-y right -28px; /* offset is to make the transition cleaner */
+  background: transparent url(../images/layout/glass_middle_right.png) repeat-y right -28px; /* offset is to make the transition cleaner */
   height: 10px;
 }
 #layout_glass_middle_center {
-  background: transparent url(..//images/layout/glass_middle_center.png) repeat;
+  background: transparent url(../images/layout/glass_middle_center.png) repeat;
 }
 
 div.page_title {
@@ -157,14 +157,14 @@ div.search_wrapper {
 }*/
 
 #layout_content_top_left_corner {
-  background: transparent url(..//images/layout/content_top_left_corner.png) no-repeat left top;
+  background: transparent url(../images/layout/content_top_left_corner.png) no-repeat left top;
   height:     12px;
   width:      12px;
   min-width:  12px;
   min-height: 12px;
 }
 #layout_content_top_left_header {
-  background: transparent url(..//images/layout/nav_background.png) repeat-y right top;
+  background: transparent url(../images/layout/nav_background.png) repeat-y right top;
   width:        175px;
   height:        12px;
   min-height:    12px;
@@ -175,7 +175,7 @@ div.search_wrapper {
   min-height: 12px;
 }
 #layout_content_top_right_corner {
-  background: transparent url(..//images/layout/content_top_right_corner.png) no-repeat right top;
+  background: transparent url(../images/layout/content_top_right_corner.png) no-repeat right top;
   height:     12px;
   width:      12px;
   min-height: 12px;
@@ -185,7 +185,7 @@ div.search_wrapper {
   background: #dedede;
 }
 #layout_content_middle_left_header {
-  background: transparent url(..//images/layout/nav_background.png) repeat-y right top;
+  background: transparent url(../images/layout/nav_background.png) repeat-y right top;
   vertical-align: top;
   padding-right:  5px;
   width:        175px;
@@ -203,17 +203,17 @@ div.search_wrapper {
 }
 
 #layout_content_bottom_left_corner {
-  background: transparent url(..//images/layout/content_bottom_left_corner.png) no-repeat left;
+  background: transparent url(../images/layout/content_bottom_left_corner.png) no-repeat left;
   height: 12px;
 }
 #layout_content_bottom_left_header {
-  background: transparent url(..//images/layout/nav_background.png) repeat-y right top;
+  background: transparent url(../images/layout/nav_background.png) repeat-y right top;
 }
 #layout_content_bottom_right_header {
   background: #fff;  
 }
 #layout_content_bottom_right_corner {
-  background: transparent url(..//images/layout/content_bottom_right_corner.png) no-repeat right;
+  background: transparent url(../images/layout/content_bottom_right_corner.png) no-repeat right;
   height: 12px;
 }
 
