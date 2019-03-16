@@ -1,0 +1,151 @@
+/* For the Left Nav */
+
+div.previous_menu, div.parent_menu, div.home_menu {
+  font-size:     110%;
+  font-weight:   bold;
+  margin-top:     2px;
+  margin-bottom:  3px;
+  padding-top:    3px;
+  padding-bottom: 2px;
+  padding-left:   5px;
+}
+
+div.parent_menu {
+  color: #fff;
+  background-color: #555568;
+}
+
+div.previous_menu {
+  color:       #555568;
+  padding-left:   15px;
+}
+
+div.home_menu {
+  color:       #555568;
+  padding-left: 10px;
+}
+
+
+#current_location {
+  font-weight: bold;
+}
+
+#current_location div.next_arrow {
+	background-image: none;
+}
+
+
+div.menu {
+  display:    inline;
+  width:       190px;
+  margin-left: 190px;
+  position: absolute;
+}
+
+#menu_wrapper {
+  width:       190px;
+  height:      500px;
+  left:         16px;
+  top:         105px;
+  overflow:   hidden;
+  position: absolute;
+  clip: rect(0px, 190px, auto, 0px);
+  
+}
+
+
+
+div.sub_menu div.previous_menu {
+  padding-left: 18px;
+}
+
+div.sub_menu div.sub_menu div.menu_item {
+  padding-left: 26px;
+}
+
+div.sub_menu div.menu_item, div.sub_menu div.parent_menu {
+  padding-left: 18px;
+}
+
+div.menu_item {
+  padding-left:  10px;
+  padding-top:    2px;
+  padding-bottom: 2px;
+  position:  relative;  /*So the arrows position correctly*/
+}
+
+
+div.menu_item:hover {
+/*  background-color: #c4c6c8;*/
+  background: transparent url(../images/layout/menu_item_hover.png) repeat-y left center;   
+  cursor: pointer;
+}
+
+div.home_menu a {
+  color:        #6C6C80;
+  text-decoration: none;
+  padding-left:     0px;
+
+}
+
+div.home_menu:hover, div.home_menu a:hover {
+  cursor: pointer;
+  color: #6C6C80;
+}
+
+
+div.menu_item a {
+  color:          black;
+  text-decoration: none;
+  padding-left:     0px;
+}
+
+div.previous_menu {
+  background: transparent url(../images/layout/nav_back_arrow_light.png) no-repeat left center;   
+}
+
+div.previous_menu:hover {
+  cursor: pointer;
+  color: #6C6C80;
+  background: transparent url(../images/layout/nav_back_arrow_dark.png) no-repeat left center;   
+}
+
+
+
+div.next_arrow {
+  top:           50%;
+  margin-top:   -5px;  /*half the height of the image*/
+  position: absolute;
+  left:         100%;
+  margin-left: -12px;
+  background: transparent url(../images/layout/nav_arrow_dark.png) no-repeat right center;   
+  height:       12px;
+  width:        12px;
+}
+
+div.previous_arrow {
+  float:  left;
+  vertical-align: middle;
+  background: transparent url(../images/layout/nav_back_arrow_dark.png) no-repeat left center;   
+  height: 10px;
+  width:  10px;
+}
+
+
+#menu_mask {
+  position: absolute;
+  height:      500px;
+  width:       205px;
+  top:         100px;
+  left:          0px;
+  z-index:         0; 
+}
+
+.hidden {
+  display: none;
+}
+div.ie_sucks { /** it really sucks */
+  width: 175px;
+  min-width: 175px;
+  height: 500px; 
+}

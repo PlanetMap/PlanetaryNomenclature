@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    {% block head %}
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/main.css') }}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/nav.css') }}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/content.css') }}" />   
+    <link rel="stylesheet" type="text/css" media="print"  href="{{ url_for('static', filename='styles/print.css') }}" />
+    <title>Planetary Names</title>
+    {% endblock %}
+  </head>
+  <body>
+
+    {% block header %}
+      <div id="header_wrapper">
+        <div id="header_left_logo">
+          <a id="iau_logo" href="http://iau.org/" target="iau"><img src="{{ url_for('static', filename='images/layout/iau_logo.png') }}" alt="iau logo"/></a>
+        </div>
+        
+        <div id="header_right_logos">
+          <a id="usgs_logo" href="https://astrogeology.usgs.gov/" target="usgs"><img src="{{ url_for('static', filename='images/layout/usgs_logo.png') }}" alt="usgs logo"/></a>
+          <a id="nasa_logo" href="https://www.nasa.gov/" target="nasa"><img src="{{ url_for('static', filename='images/layout/nasa_logo.png') }}" alt="nas logo"/></a>
+        </div>
+
+        <div id="header_center">
+          <div id="header_text">
+            Gazetteer of Planetary Nomenclature
+          </div>
+          <div id="header_sub_text">
+            International Astronomical Union (IAU)  Working Group for Planetary System Nomenclature (WGPSN)
+          </div>
+        </div>
+      </div>
+    {% endblock %}
+
+    {% block content %}{% endblock %}
+
+  </body>
+</html>

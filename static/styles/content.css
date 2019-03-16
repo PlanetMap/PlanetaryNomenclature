@@ -1,0 +1,262 @@
+/* Moon Lac Map Stuff */
+#color_topo_lunar_lac_map, #lo_lunar_lac_map {
+  border-color: #4B4E4E;
+  border-width:     3px;
+  border-style:   solid;
+}
+
+ul.tabs {
+  list-style-type:  none;
+  margin:            0px;
+  padding-left:     10px;
+}
+ul.tabs li {
+  display:           inline;
+  padding-right:       10px;
+  padding-left:        10px;
+  padding-top:          0px;
+  padding-bottom:       0px;
+  margin:               0px;
+  margin-left:         10px;
+  background-color: #4B4E4E;
+}
+
+ul.tabs li a {
+  color:        #ffffff;
+}
+ul.tabs li a:hover {
+  color:        #000000;
+  text-decoration: none;
+  cursor:       pointer;
+}
+ul.tabs li:hover {
+  cursor:       pointer;
+}
+ul.tabs li.background {
+  background-color: #C1C9C9;
+}
+#color_topo_tab {
+  text-align: center;
+  font-weight: bold;
+}
+#lo_tab {
+  background-color: #C1C9C9;
+  font-style: italic;
+}
+
+/** Name request Stuff **/
+table.name_request {
+  width: 100%;
+  padding-top: 10px;
+}
+table.name_request tbody tr th {
+  padding-top: 5px;
+  padding-bottom: 5px;
+/*  margin-bottom: 5px;*/
+  border-bottom: 1px solid silver;
+  background-color: #e6e6e6;
+}
+table.name_request tbody tr.title {
+/*  margin-top: 10px;
+  margin-bottom: 5px;*/
+}
+span.label {
+  font-weight: bold;
+}
+td.label {
+  text-align:  left;
+  font-weight: bold;
+}
+
+tr.first_row td {
+  padding-top: 5px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+table.name_request tbody tr td {
+  padding-bottom: 10px;
+}
+
+#errors {
+  background-color:     #ccc;
+  color:             #f8100f;
+/*  border: 2px dotted #191919;*/
+  font-weight:          bold;
+  text-align:           left;
+  vertical-align:     middle;
+  top:                  10px;
+  right:                10px;
+  bottom:               10px;
+  left:                 10px;
+}
+
+
+input.required, textarea.required, div.required {
+  border: 1px solid #971616; 
+  background-color: #FFC2C2;
+}
+
+div.required {
+  width: 400px;
+}
+
+select.required {
+  background-color: #FFC2C2;
+}
+
+td.id_column {
+  text-align:  right;
+  margin-right:  5px;
+  padding-right: 5px;
+}
+
+/*Used for showing units (KM, Meters, seconds, etc)*/
+span.units {
+  font-size:            90%;
+  color:            #2C2C2C;
+  text-transform: uppercase;
+}
+.nobr  { 
+  white-space:nowrap; 
+}
+.red {
+  color: red;
+}
+td.submit_buttons {
+  padding-top: 30px;
+  padding-left: 20px;
+}
+td.submit_buttons input {
+  margin-right: 10px;
+}
+
+table.planets_table, table.rings_table {
+  margin-bottom: 50px;
+}
+
+table.planets_table tbody tr td, table.rings_table tbody tr td {
+  border: 1px solid #ccc;
+  padding: 5px;
+}
+table.planets_table tbody tr th, table.rings_table tbody tr th {
+  border: 1px solid #808080;
+  padding: 5px;
+  vertical-align: middle;
+}
+
+table.planets_table tbody tr td.emphasis, table.rings_table tbody tr td.emphasis {
+  font-weight: bold;
+}
+
+table.admin_table {
+  margin: 10px;
+}
+
+table.admin_table tbody tr td {
+  padding: 5px;
+}
+
+/** used in the faq */
+span.title {
+  font-size:    140%;
+  font-style: italic;
+  color:     #313131;
+  margin-right:  4px;
+  font-weight: normal;
+}
+dl.faq dd {
+  margin-bottom: 7px;
+  margin-left:   0px;
+}
+dt {
+  font-weight:bold;
+}
+
+.top {
+  vertical-align: top;
+}
+
+div.center {
+  text-align: middle;
+}
+table.members {
+  padding-bottom: 30px;
+  margin-left:    20px;
+}
+
+table.members tbody tr th, table.members tbody tr td  {
+  text-align: left;
+}
+
+
+table.cont_eth {
+  padding: 10px;
+}
+
+table.cont_eth tbody tr td {
+  padding-left: 8px;
+}
+
+table.categories {
+  padding: 10px;
+}
+
+table.categories tbody tr td {
+  padding-right: 10px;
+  border: 1px solid #93999B;
+	
+}
+div.categories p {
+  padding-left:  10px;
+  margin-bottom: 20px;
+}
+div.categories h2 {
+  padding-top: 10px;
+}
+ul.index_images li ul {
+  padding-bottom: 10px;
+}
+
+ul.index_images li {
+  font-weight: bold;
+}
+
+ul.index_images li ul * {
+  font-weight: normal;
+}
+table.feature_detail tr th {
+  white-space:nowrap;
+}
+
+table.feature_detail tr td {
+  padding: 5px;
+}
+table.specs_table tbody tr td {
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e6e6e6;
+}
+table.specs_table tbody tr td.label {
+  vertical-align: middle;
+}
+table.codes tbody tr td.label {
+  text-align: center;
+}
+span.sub_text {
+  font-size: 90%;
+  color: #808080;
+}
+#popup_message {
+  color: #464646;
+  left: 370px;
+  top: 90px;
+  position:absolute;
+}
+a.dont_underline {
+  text-decoration: none;
+}
+a.dont_underline:hover {
+  text-decoration: underline;  
+}
