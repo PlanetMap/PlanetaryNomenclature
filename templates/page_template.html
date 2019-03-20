@@ -2,6 +2,7 @@
 <html>
   <head>
     {% block head %}
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/vnd.microsoft.icon" />
     <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/nav.css') }}" />
     <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/reset.css') }}" />
     <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/content.css') }}" />   
@@ -33,8 +34,11 @@
             </div>
           </div>
         </div>
+    {% endblock %}
 
-        <div id="layout_glass_wrapper" >
+    {% block content %}
+
+      <div id="layout_glass_wrapper" >
           <table id="layout_glass_table">
             <tbody>
               <tr class="layout">
@@ -370,9 +374,7 @@
         </div>
       </div>
 
-    {% endblock %}
-
-    {% block content %}
+      
 
     
     {% endblock %}
