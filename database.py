@@ -2,10 +2,12 @@ from sqlalchemy import create_engine, Column, Integer, String, SmallInteger, Dat
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
 from geoalchemy2 import Geometry
+from flask_sqlalchemy import SQLAlchemy
+import nomen
 
-Base = declarative_base()
+NomenDB = SQLAlchemy(nomen.NomenApp)
 
-class Pages(Base):
+class Pages(NomenDB.Model):
 	__tablename__   = 'pages'
 	page_id         = Column(Integer, primary_key=True, autoincrement=True)
 	page_name       = Column(String(1024))
@@ -13,9 +15,9 @@ class Pages(Base):
 	target_id       = Column(Integer)
 	system_id       = Column(Integer)
 	content         = Column(String)
-	updated_on      = Column(DateTime, timezone=False)
+	updated_on      = Column(DateTime(timezone=False))
 
-class Features(Base):
+class Features(NomenDB.Model):
     __tablename__       = 'features'
     feature_id          = Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024), nullable=False)
@@ -28,11 +30,11 @@ class Features(Base):
     feature_reference_id= Column(Integer)
     description         = Column(String(1024))
     approval_status_id  = Column(Integer)
-    approval_date       = Column(DateTime, timezone=False)
+    approval_date       = Column(DateTime(timezone=False))
     origin              = Column(String(1024))
-    updated_on          = Column(DateTime, timezone=False)
+    updated_on          = Column(DateTime(timezone=False))
     
-class Targets(Base):
+class Targets(NomenDB.Model):
     __tablename__   = 'targets'
     target_id       = Column(Integer, primary_key=True, autoincrement=True)
     naif_id         = Column(Integer)
@@ -47,26 +49,26 @@ class Targets(Base):
     mean_radius     = Column(DOUBLE_PRECISION)
     use_triaxial    = Column(Boolean, default=False)
 
-class Approvalstatuses(Base):
+class Approvalstatuses(NomenDB.Model):
     __tablename__       = 'approvalstatuses'
     approval_status_id  = Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024))
     short_name          = Column(String(512))
 
-class Continents(Base):
+class Continents(NomenDB.Model):
     __tablename__   = 'continents'
     continent_id    = Column(Integer, primary_key=True, autoincrement=True)
     continent_name  = Column(String(1024), nullable=False)
     continent_code  = Column(String(20))
 
-class Controlnets(Base):
+class Controlnets(NomenDB.Model):
     __tablename__   = 'controlnets'
     control_net_id  = Column(Integer, primary_key=True, autoincrement=True)
     name            = Column(String(64), nullable=False)
     target_id       = Column(Integer)
     description     = Column(String(1024))
 
-class Coordinatesystems(Base):
+class Coordinatesystems(NomenDB.Model):
     __tablename__       = 'coordinatesystems'
     coordinate_system_id= Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024))
@@ -74,7 +76,7 @@ class Coordinatesystems(Base):
     is_positive_east    = Column(Boolean)
     is_0_360            = Column(Boolean)
 
-class Featuregeometries(Base):
+class Featuregeometries(NomenDB.Model):
     __tablename__       = 'featuregeometries'
     feature_geometry_id = Column(Integer, primary_key=True, autoincrement=True)
     feature_id          = Column(Integer)
@@ -82,27 +84,27 @@ class Featuregeometries(Base):
     center_point        = Column(Geometry('GEOMETRY'), nullable=False)
     diameter            = Column(REAL, nullable=False)
     control_net_id      = Column(Integer)
-    created_on          = Column(DateTime, timezone=False)
-    updated_on          = Column(DateTime, timezone=False)
+    created_on          = Column(DateTime(timezone=False))
+    updated_on          = Column(DateTime(timezone=False))
     active              = Column(Boolean)
     northmostlatitude   = Column(DOUBLE_PRECISION) 
     southmostlatitude   = Column(DOUBLE_PRECISION) 
     eastmostlongitude   = Column(DOUBLE_PRECISION) 
     westmostlongitude   = Column(DOUBLE_PRECISION) 
 
-class ethnicities(Base):
+class ethnicitiesd(NomenDB.Model):
     __tablename__   = 'ethnicities'
     ethnicity_id    = Column(Integer, primary_key=True, autoincrement=True)
     continent_id    = Column(Integer, nullable=False)
     ethnicity_name  = Column(String(1024), nullable=False)
     ethnicity_code  = Column(String(20))
 
-class featurereferences(Base):
+class featurereferences(NomenDB.Model):
     __tablename__           = 'featurereferences'
     feature_reference_id    = Column(Integer, primary_key=True, autoincrement=True)
     name                    = Column(String(1024), nullable=False)
 
-class featurerequests(Base):
+class featurerequests(NomenDB.Model):
     __tablename__           = 'featurerequests'
     feature_request_id      = Column(Integer, primary_key=True, autoincrement=True)
     requester_name          = Column(String(1024))
@@ -111,8 +113,8 @@ class featurerequests(Base):
     justification           = Column(String)
     additional_info         = Column(String)
     approval_status         = Column(Integer)
-    submitted_on            = Column(DateTime, timezone=False)
-    updated_on              = Column(DateTime, timezone=False)
+    submitted_on            = Column(DateTime(timezone=False))
+    updated_on              = Column(DateTime(timezone=False))
     other_reference         = Column(String(1024))
     feature_reference_id    = Column(Integer)
     ethnicity_id            = Column(Integer)
@@ -125,14 +127,14 @@ class featurerequests(Base):
     target_id               = Column(Integer)
     is_positive_east        = Column(Boolean)
 
-class featuretypes(Base):
+class featuretypes(NomenDB.Model):
     __tablename__   = 'featuretypes'
     feature_type_id = Column(Integer, primary_key=True, autoincrement=True)
     name            = Column(String(1024), nullable=False)
     code            = Column(String(1024))
     description     = Column(String(1024))
 
-class quads(Base):
+class quads(NomenDB.Model):
     __tablename__   = 'quads'
     quad_id         = Column(Integer, primary_key=True, autoincrement=True)
     quad_group_id   = Column(Integer)
@@ -141,10 +143,17 @@ class quads(Base):
     link            = Column(String(1024))
     geometry        = Column(Geometry('GEOMETRY'))
 
-class targetcoordinates(Base):
+class targetcoordinates(NomenDB.Model):
     __tablename__           = 'targetcoordinates'
     target_coordinate_id    = Column(Integer, primary_key=True, autoincrement=True)
     target_id               = Column(Integer, nullable=False)
     coordinate_system_id    = Column(Integer, nullable=False)
     accepted_by_the_iau     = Column(Boolean)
     priority                = Column(Integer)
+
+def get_page(name):
+    class Page:
+        def __init__(self):
+            self.title = Pages.query.filter_by(page_name=name.upper(), section='TITLE').first().content
+            self.body = Pages.query.filter_by(page_name=name.upper(), section='BODY').first().content
+    return Page()

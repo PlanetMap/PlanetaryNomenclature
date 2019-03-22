@@ -1,12 +1,20 @@
 from flask import Flask, render_template
-# import nomenDB
+from jinja2 import Markup
+import database
 
-app = Flask(__name__)
+NomenApp = Flask(__name__)
+NomenApp.config.from_pyfile('config.py')	
 
-
-@app.route('/')
+@NomenApp.route('/')
 def index_handler():
-	return render_template('page_template.html')
+	return render_template('page_template.html', page_title = 'Testing Title', page_body = 'Testing Body')
+
+@NomenApp.route('/Page/<name>')
+def page_handler(name):
+	page = database.get_page(name)
+	return render_template('page_template.html', page_title = Markup(page.title), page_body = Markup(page.body))
 
 if __name__ == "__main__":
-	app.run(host = '0.0.0.0', port = 5000, debug=True)
+	database.NomenDB.init_app(NomenApp)
+	NomenApp.run(host = '0.0.0.0', port = 5000, debug=True)
+

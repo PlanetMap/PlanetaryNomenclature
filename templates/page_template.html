@@ -53,7 +53,7 @@
                     </form>
                   </div>
                   <div class="page_title">
-                    Planetary Names<!--<c:if test="${title != null}">: <c:out value="${title}"/></c:if>-->
+                    Planetary Names: {{ page_title }}
                   </div>
 
                 </td>
@@ -336,7 +336,7 @@
                       </td>
                       <td class="layout" id="layout_content_middle_right_header">
                         <div id="layout_content_wrapper">
-                          <!--<s:layout-component name="body"/>-->
+                            {{ page_body }}
                         </div>
                       </td>
                       <td class="layout" id="layout_content_middle_right_corner" rowspan="2"></td>
@@ -373,10 +373,7 @@
           </table>
         </div>
       </div>
-
-      
-
-    
+   
     {% endblock %}
 
   </body>
