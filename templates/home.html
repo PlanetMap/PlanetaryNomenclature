@@ -1,0 +1,140 @@
+{% extends 'page_template.html' %}
+{% block head %}
+    {{ super() }}
+    <link rel="alternate" type="application/rss+xml" href="http://astrogeology.usgs.gov/rss/nomenclature" />
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.3.2.min.js') }}" ></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/chooserJS.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.cookie.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.rss.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/AC_RunActiveContent.js') }}"></script>
+{% endblock %}
+
+{% block title_container %}Welcome{% endblock %}
+
+{% block content_container %}
+  <script type="text/javascript" charset="utf-8">
+    //<!--
+    var chooserJSPath = '../static/images/chooser/';
+    var chooserJSURL = {earth: 'Page/MOON/target',
+                        jupiter: 'Page/JUPITER/system',
+                        mars: 'Page/MARS/system',
+                        mercury: 'Page/MERCURY/target',
+                        neptune: 'Page/NEPTUNE/system',
+                        saturn: 'Page/SATURN/system',
+                        smallBodies: 'Page/ASTEROIDS/system',
+                        uranus: 'Page/URANUS/system',
+                        venus: 'Page/VENUS/target'};
+    // -->
+  </script>
+      
+  <table>
+    <tr>
+      <td class="chooser">
+        <div id="top_chooser_border"></div>
+        <div id="flash_chooser">
+          <div id="chooserJSDiv"></div>
+          <script language="JavaScript" type="text/javascript">
+            //<!--
+              var use_flash_version = true;
+              if($.cookie('planetarynames') == 'useFlashChooser') {
+                use_flash_version = true;
+                
+              } else  if((GetSwfVer() < 8 && $.cookie('planetarynames') != 'useHTMLChooser') || $.cookie('planetarynames') == 'useHTMLChooser') {
+                // first time to this page, and it looks like they dont have flash installed   ||  cookie says use html version
+                use_flash_version = false;
+              } else {
+                // lets default to the html version
+                use_flash_version = true;
+              }
+              
+              
+              if (!use_flash_version) {
+                $(document).ready(function() { $('#to_flash_chooser').show(); });
+                createChooserJS('chooserJSDiv');
+              } else {
+                $(document).ready(function() { $('#to_html_chooser').show(); });
+                AC_FL_RunContent(
+                  'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0',
+                  'width', '540',
+                  'height', '494',
+                  'src', 'chooser/chooser',
+                  'quality', 'high',
+                  'pluginspage', 'http://www.adobe.com/go/getflashplayer',
+                  'align', 'middle',
+                  'play', 'true',
+                  'loop', 'true',
+                  'scale', 'showall',
+                  'wmode', 'window',
+                  'devicefont', 'false',
+                  'id', 'chooser',
+                  'bgcolor', '#ffffff',
+                  'name', 'chooser',
+                  'menu', 'true',
+                  'allowFullScreen', 'false',
+                  'allowScriptAccess','sameDomain',
+                  'movie', 'chooser/chooser',
+                  'salign', '',
+                  'FlashVars','chooserMode=nomen&skipEarth=true'
+                  ); //end AC code
+
+              }
+            // -->
+          </script>
+          <noscript>
+            <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="540" height="494" id="chooser" align="middle">
+              <param name="allowScriptAccess" value="sameDomain" />
+              <param name="allowFullScreen" value="false" />
+              <param name="movie" value="chooser/chooser.swf" /><param name="quality" value="high" /><param name="bgcolor" value="#ffffff" /> 
+              <embed src="chooser/chooser.swf" quality="high" bgcolor="#ffffff" width="540" height="494" name="chooser" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" FlashVars="chooserMode=nomen&skipEarth=true" pluginspage="http://www.adobe.com/go/getflashplayer" />
+            </object>
+          </noscript>
+          
+
+        </div>
+        <div id="bottom_chooser_border"/></div>
+        <div class="html_version" id="to_html_chooser">Page loading too slow? 
+          <a href="#" onClick="$('#flash_chooser').empty(); 
+                              createChooserJS('flash_chooser'); 
+                              $.cookie('planetarynames', 'useHTMLChooser'); 
+                              $('#to_html_chooser').hide(); 
+                              $('#to_flash_chooser').show(); 
+                              return false;">Try the HTML Version</a>
+        </div>
+        <div class="html_version" id="to_flash_chooser">
+          <a href="${contextPath}/" onClick="$.cookie('planetarynames', null); $.cookie('planetarynames', 'useFlashChooser'); return true; ">Try the Flash Version</a>
+        </div>
+        
+      </td>
+      <td>
+        <table class="news">
+          <tr>
+            <td class="news_header">News</td>
+          </tr>
+          <tr>
+            <td class="news_body" id="rssFeed">
+            </td>
+          </tr>
+          <tr>
+            <td class="news_footer">
+              <a href="http://astrogeology.usgs.gov/news/nomenclature">Read More..</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+<p class="home_page_sub_text">
+The Gazetteer of Planetary Nomenclature is maintained by the Planetary Geomatics Group of the <a href="http://astrogeology.usgs.gov/" title="astro">USGS Astrogeology Science Center</a>.
+This work is supported by the <a href="http://www.nasa.gov" title="nasa">National Aeronautics and Space Administration</a> under Contract No. NNH09AL18I issued through the Office of Space Science.
+This site is developed in cooperation with the <a  href="http://iau.org" title="iau">International Astronomical Union</a>.
+</p>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+    $('#rssFeed').rss('https://astrogeology.usgs.gov/rss/nomenclature', { limit: 6, ssl: true,
+      entryTemplate: '<li><a href="{url}">{title}</a><br/>{shortBodyPlain}</li>' });
+  });
+</script>
+
+{% endblock %}

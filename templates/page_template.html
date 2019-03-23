@@ -12,7 +12,6 @@
     {% endblock %}
   </head>
   <body>
-
     {% block header %}
       <div id="body">
         <div id="header_wrapper">
@@ -35,9 +34,8 @@
           </div>
         </div>
     {% endblock %}
-
+    
     {% block content %}
-
       <div id="layout_glass_wrapper" >
           <table id="layout_glass_table">
             <tbody>
@@ -53,7 +51,7 @@
                     </form>
                   </div>
                   <div class="page_title">
-                    Planetary Names: {{ page_title }}
+                    Planetary Names: {% block title_container %} {{ page_title }} {% endblock %}
                   </div>
 
                 </td>
@@ -336,7 +334,7 @@
                       </td>
                       <td class="layout" id="layout_content_middle_right_header">
                         <div id="layout_content_wrapper">
-                            {{ page_body }}
+                          {% block content_container %} {{ page_body }} {% endblock %}
                         </div>
                       </td>
                       <td class="layout" id="layout_content_middle_right_corner" rowspan="2"></td>
@@ -373,8 +371,6 @@
           </table>
         </div>
       </div>
-   
     {% endblock %}
-
   </body>
 </html>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for
 from jinja2 import Markup
 import database
 
@@ -7,7 +7,7 @@ NomenApp.config.from_pyfile('config.py')
 
 @NomenApp.route('/')
 def index_handler():
-	return render_template('page_template.html', page_title = 'Testing Title', page_body = 'Testing Body')
+	return render_template('home.html')
 
 @NomenApp.route('/Page/<name>')
 def page_handler(name):
