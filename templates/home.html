@@ -2,16 +2,16 @@
 {% block head %}
     {{ super() }}
     <link rel="alternate" type="application/rss+xml" href="http://astrogeology.usgs.gov/rss/nomenclature" />
-    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.3.2.min.js') }}" ></script>
+    <!--<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-1.3.2.min.js') }}" ></script>-->
     <script type="text/javascript" src="{{ url_for('static', filename='js/chooserJS.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.cookie.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.rss.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/AC_RunActiveContent.js') }}"></script>
 {% endblock %}
 
-{% block title_container %}Welcome{% endblock %}
+{% block title %}Welcome{% endblock %}
 
-{% block content_container %}
+{% block body %}
   <script type="text/javascript" charset="utf-8">
     //<!--
     var chooserJSPath = '../static/images/chooser/';
@@ -57,7 +57,7 @@
                   'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0',
                   'width', '540',
                   'height', '494',
-                  'src', 'chooser/chooser',
+                  'src', '{{ url_for("static", filename="flash/chooser") }}',
                   'quality', 'high',
                   'pluginspage', 'http://www.adobe.com/go/getflashplayer',
                   'align', 'middle',
@@ -72,7 +72,7 @@
                   'menu', 'true',
                   'allowFullScreen', 'false',
                   'allowScriptAccess','sameDomain',
-                  'movie', 'chooser/chooser',
+                  'movie', '{{ url_for("static", filename="flash/chooser") }}',
                   'salign', '',
                   'FlashVars','chooserMode=nomen&skipEarth=true'
                   ); //end AC code
@@ -84,8 +84,8 @@
             <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="540" height="494" id="chooser" align="middle">
               <param name="allowScriptAccess" value="sameDomain" />
               <param name="allowFullScreen" value="false" />
-              <param name="movie" value="chooser/chooser.swf" /><param name="quality" value="high" /><param name="bgcolor" value="#ffffff" /> 
-              <embed src="chooser/chooser.swf" quality="high" bgcolor="#ffffff" width="540" height="494" name="chooser" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" FlashVars="chooserMode=nomen&skipEarth=true" pluginspage="http://www.adobe.com/go/getflashplayer" />
+              <param name="movie" value="{{ url_for('static', filename='flash/chooser.swf') }}" /><param name="quality" value="high" /><param name="bgcolor" value="#ffffff" /> 
+              <embed src="{{ url_for('static', filename='flash/chooser.swf') }}" quality="high" bgcolor="#ffffff" width="540" height="494" name="chooser" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" FlashVars="chooserMode=nomen&skipEarth=true" pluginspage="http://www.adobe.com/go/getflashplayer" />
             </object>
           </noscript>
           
@@ -101,7 +101,7 @@
                               return false;">Try the HTML Version</a>
         </div>
         <div class="html_version" id="to_flash_chooser">
-          <a href="${contextPath}/" onClick="$.cookie('planetarynames', null); $.cookie('planetarynames', 'useFlashChooser'); return true; ">Try the Flash Version</a>
+          <a href="/" onClick="$.cookie('planetarynames', null); $.cookie('planetarynames', 'useFlashChooser'); return true; ">Try the Flash Version</a>
         </div>
         
       </td>

@@ -1,0 +1,505 @@
+<div id="main_menu" class="menu">
+  <div class="menu_item"  onClick="location.href='/';"           >Home</div>
+  <div class="menu_item"  onClick="animateLeft('#main_menu'); animateLeft('#about_menu');"          ><div class="next_arrow">&nbsp;</div><span>About          </span></div>
+  <div class="menu_item"  onClick="animateLeft('#main_menu'); animateLeft('#nomenclature_menu');"   ><div class="next_arrow">&nbsp;</div><span>Nomenclature   </span></div>
+  <div class="menu_item"  onClick="animateLeft('#main_menu'); animateLeft('#documentation_menu');"  ><div class="next_arrow">&nbsp;</div><span>Documentation  </span></div>
+  <div class="menu_item"  onClick="animateLeft('#main_menu'); animateLeft('#images_and_data_menu');"><div class="next_arrow">&nbsp;</div><span>Images and GIS Data</span></div>
+  <div class="menu_item"  onClick="location.href='/AdvancedSearch';"                  ><a href="${contextPath}/AdvancedSearch">Advanced Search</a></div>
+  <div class="menu_item"  onClick="location.href='/FeatureNameRequest';"              ><a href="${contextPath}/FeatureNameRequest">Name Request Form</a></div>
+  <!--<c:if test="${actionBean.ENABLE_ADMIN}"> 
+    <div class="menu_item"  onClick="animateLeft('#main_menu'); animateLeft('#admin_menu');"          ><div class="next_arrow">&nbsp;</div><span>Admin Editor</span></div>
+  </c:if>-->
+</div>
+
+
+<div id="about_menu" class="menu">
+  <div class="home_menu" onClick="location.href='/';"><a href="/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#about_menu'); animateRight('#main_menu');"> Previous</div>
+  <div class="parent_menu">About</div>
+  <div class="sub_menu"> 
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Introduction';"     ><a href="/Page/Introduction"     >Introduction                            </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/History';"          ><a href="/Page/History"          >History &amp; References                </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Approved';"         ><a href="/Page/Approved"         >How Names are Approved                  </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Members';"          ><a href="/Page/Members"          >IAU Working Group and Task Group Members</a></div>                                                                                          
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/FAQ';"              ><a href="/Page/FAQ"              >FAQ                                     </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Acknowledgements';" ><a href="/Page/Acknowledgements" >Acknowledgements                        </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Related_Resources';"><a href="/Page/Related_Resources">Related Resources                       </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Contact_Us';"       ><a href="/Page/Contact_Us"       >Contact Us                              </a></div>
+  </div>
+</div>                        
+
+<div id="nomenclature_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#nomenclature_menu'); animateRight('#main_menu');"> Previous</div>
+  <div class="parent_menu">Nomenclature</div>
+  <div class="sub_menu">
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/MERCURY/target';"                ><a href="/Page/MERCURY/target">Mercury   </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/VENUS/target';"                  ><a href="/Page/VENUS/target">Venus     </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/MOON/target';"                   ><a href="/Page/MOON/target">The Moon  </a></div>
+    <div class="menu_item" onClick="animateLeft('#nomenclature_menu'); animateLeft('#mars_menu');"      ><div class="next_arrow"> </div><span>Mars     </span></div>
+    <div class="menu_item" onClick="animateLeft('#nomenclature_menu'); animateLeft('#asteroids_menu');" ><div class="next_arrow"> </div><span>Asteroids</span></div>
+    <div class="menu_item" onClick="animateLeft('#nomenclature_menu'); animateLeft('#jupiter_menu');"   ><div class="next_arrow"> </div><span>Jupiter  </span></div>
+    <div class="menu_item" onClick="animateLeft('#nomenclature_menu'); animateLeft('#saturn_menu');"    ><div class="next_arrow"> </div><span>Saturn   </span></div>
+    <div class="menu_item" onClick="animateLeft('#nomenclature_menu'); animateLeft('#uranus_menu');"    ><div class="next_arrow"> </div><span>Uranus   </span></div>
+    <div class="menu_item" onClick="animateLeft('#nomenclature_menu'); animateLeft('#neptune_menu');"   ><div class="next_arrow"> </div><span>Neptune  </span></div>
+    <div class="menu_item" onClick="animateLeft('#nomenclature_menu'); animateLeft('#dwarf_menu');"     ><div class="next_arrow"> </div><span>Dwarf Planets  </span></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Rings';"                         ><a href="/Page/Rings"  >Ring and Ring Gap Nomenclature                     </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Planets';"                       ><a href="/Page/Planets">Planet and Satellite Names, Discoverers, and Themes</a></div>
+  </div>
+</div>
+
+<div id="documentation_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+  
+  <div class="previous_menu" onClick="animateRight('#documentation_menu'); animateRight('#main_menu');"> Previous</div>
+  <div class="parent_menu">Documentation</div>
+  <div class="sub_menu"> 
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Rules';"       ><a href="/Page/Rules"       >IAU Rules                  </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Specifics';"   ><a href="/Page/Specifics"   >Specifics of the Gazetteer </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Abbreviations';"    ><a href="/Abbreviations"    >Abbreviations              </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/References';"       ><a href="/References"       >Sources of Planetary Names </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Categories';"  ><a href="/Page/Categories"  >Surface Feature Categories </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/DescriptorTerms';"  ><a href="/DescriptorTerms"  >Descriptor Terms           </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/TargetCoordinates';"><a href="/TargetCoordinates">Target Coordinate Systems  </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Website';"     ><a href="/Page/Website"     >Help using the Website     </a></div>
+    <div class="menu_item" onClick="location.href='https://astrodocs.wr.usgs.gov/index.php/Webservices';" title="Geospatial Information System - Applicaion Programming Interface"><a title="Geospatial Information System - Applicaion Programming Interface" href="https://astrodocs.wr.usgs.gov/index.php/Webservices"   target="_new" >GIS API</a></div>
+  </div>
+</div>
+
+<div id="images_and_data_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#images_and_data_menu'); animateRight('#main_menu');"> Previous</div>
+  <div class="parent_menu">Images &amp; GIS Data</div>
+  <div class="sub_menu"> 
+    <div class="menu_item" onClick="location.href='${contextPath}/Page/Images';"    ><a href="/Page/Images"   > Images showing named features </a></div>
+    <div class="menu_item" onClick="location.href='${contextPath}/GIS_Downloads';"  ><a href="/Page/GIS_Downloads" > GIS Downloads                 </a></div>
+    <div class="sub_menu"> 
+    <!-- Hide these from the nav, however they need to be here for the js to figure out where you are -->
+      <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/mercuryQuadMap';"         ><a href="/Page/mercuryQuadMap">          Mercury 1:5 million </a></div>
+      <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/venus1to5m_Radar';"       ><a href="/Page/venus1to5m_Radar">        Venus 1:5 million   </a></div>
+      <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/venus1to10m_Altimetry';"  ><a href="/Page/venus1to10m_Altimetry">   Venus 1:10 million  </a></div>
+      <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/moon1to1mShadedRelief';"  ><a href="/Page/moon1to1mShadedRelief">   Moon 1:1 million    </a></div>
+      <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/moon1to10mShadedRelief';" ><a href="/Page/moon1to10mShadedRelief">  Moon 1:10 million   </a></div>
+      <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/mars1to5mMOLA';"          ><a href="/Page/mars1to5mMOLA">           Mars 1:5 million    </a></div>
+    </div>
+  </div>
+</div>
+
+<div id="mars_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#mars_menu'); animateRight('#nomenclature_menu');"> Previous</div> 
+  <div class="sub_menu">
+    <div class="sub_menu">
+      <div class="parent_menu">Mars</div>
+      <div class="sub_menu">
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/MARS/system';"   ><a href="/Page/MARS/system">   Martian System  </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/MARS/target';"   ><a href="/Page/MARS/target">   Mars            </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/PHOBOS/target';" ><a href="/Page/PHOBOS/target"> Phobos          </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/DEIMOS/target';" ><a href="/Page/DEIMOS/target"> Deimos          </a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="asteroids_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#asteroids_menu'); animateRight('#nomenclature_menu');"> Previous</div> 
+  <div class="sub_menu">
+    <div class="sub_menu">
+      <div class="parent_menu">Asteroids</div>
+      <div class="sub_menu">
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/CERES/target';"    ><a href="${contextPath}/Page/CERES/target">Ceres  </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/DACTYL/target';"    ><a href="${contextPath}/Page/DACTYL/target">Dactyl  </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/EROS/target';"      ><a href="${contextPath}/Page/EROS/target">Eros    </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/GASPRA/target';"    ><a href="${contextPath}/Page/GASPRA/target">Gaspra  </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/IDA/target';"       ><a href="${contextPath}/Page/IDA/target">Ida     </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/ITOKAWA/target';"   ><a href="${contextPath}/Page/ITOKAWA/target">Itokawa </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/LUTETIA/target';"   ><a href="${contextPath}/Page/LUTETIA/target">Lutetia</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/MATHILDE/target';"  ><a href="${contextPath}/Page/MATHILDE/target">Mathilde</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/RYUGU/target';"    ><a href="${contextPath}/Page/RYUGU/target">Ryugu</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/STEINS/target';"    ><a href="${contextPath}/Page/STEINS/target">Steins</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/VESTA/target';"     ><a href="${contextPath}/Page/VESTA/target">Vesta</a></div>
+        <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/ASTEROIDS/system';" ><a href="${contextPath}/Page/ASTEROIDS/system">More..  </a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="jupiter_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#jupiter_menu'); animateRight('#nomenclature_menu');"> Previous</div>
+  <div class="sub_menu">
+    <div class="sub_menu">
+      <div class="parent_menu">Jupiter</div>
+      <div class="sub_menu">
+        <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/JUPITER/system';"      ><a href="${contextPath}/Page/JUPITER/system">Jovian System</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/Rings#jupiter';"       ><a href="${contextPath}/Page/Rings#jupiter">Jupiter Rings</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/AMALTHEA/target';"     ><a href="${contextPath}/Page/AMALTHEA/target">Amalthea     </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/THEBE/target';"        ><a href="${contextPath}/Page/THEBE/target">Thebe        </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/IO/target';"           ><a href="${contextPath}/Page/IO/target">Io           </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/EUROPA/target';"       ><a href="${contextPath}/Page/EUROPA/target">Europa       </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/GANYMEDE/target';"     ><a href="${contextPath}/Page/GANYMEDE/target">Ganymede     </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/CALLISTO/target';"     ><a href="${contextPath}/Page/CALLISTO/target">Callisto     </a></div>
+        <!-- <div class="menu_item" onClick="location.href='${contextPath}/Page/JUPITER/target#more';" ><a href="${contextPath}/Page/JUPITER/target#more">More..       </a></div> -->
+      </div>                                                                                    
+    </div>
+  </div>
+</div>
+
+<div id="saturn_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#saturn_menu'); animateRight('#nomenclature_menu');"> Previous</div>
+  <div class="sub_menu">
+    <div class="sub_menu">
+      <div class="parent_menu">Saturn</div>
+      <div class="sub_menu">
+        <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/SATURN/system';"      ><a href="${contextPath}/Page/SATURN/system"     >Saturnian System</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/Rings#saturn';"       ><a href="${contextPath}/Page/Rings#saturn"      >Saturn Rings    </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/EPIMETHEUS/target';"  ><a href="${contextPath}/Page/EPIMETHEUS/target" >Epimetheus      </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/JANUS/target';"       ><a href="${contextPath}/Page/JANUS/target"      >Janus           </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/MIMAS/target';"       ><a href="${contextPath}/Page/MIMAS/target"      >Mimas           </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/ENCELADUS/target';"   ><a href="${contextPath}/Page/ENCELADUS/target"  >Enceladus       </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/TETHYS/target';"      ><a href="${contextPath}/Page/TETHYS/target"     >Tethys          </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/DIONE/target';"       ><a href="${contextPath}/Page/DIONE/target"      >Dione           </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/RHEA/target';"        ><a href="${contextPath}/Page/RHEA/target"       >Rhea            </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/TITAN/target';"       ><a href="${contextPath}/Page/TITAN/target"      >Titan           </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/HYPERION/target';"    ><a href="${contextPath}/Page/HYPERION/target"   >Hyperion        </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/IAPETUS/target';"     ><a href="${contextPath}/Page/IAPETUS/target"    >Iapetus         </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/PHOEBE/target';"      ><a href="${contextPath}/Page/PHOEBE/target"     >Phoebe          </a></div>
+        <!-- <div class="menu_item" onClick="location.href='${contextPath}/Page/SATURN/target#more';" ><a href="${contextPath}/Page/SATURN/target#more">more..          </a></div> -->
+      </div>                                                                                    
+    </div>
+  </div>
+</div>                         
+
+<div id="uranus_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#uranus_menu'); animateRight('#nomenclature_menu');"> Previous</div>
+  <div class="sub_menu">
+    <div class="sub_menu">
+      <div class="parent_menu">Uranus</div>
+      <div class="sub_menu">
+        <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/URANUS/system';" ><a href="${contextPath}/Page/URANUS/system">Uranian System</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/Rings#uranus';"    ><a href="${contextPath}/Page/Rings#uranus">Uranus Rings  </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/PUCK/target';"     ><a href="${contextPath}/Page/PUCK/target">Puck          </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/MIRANDA/target';"  ><a href="${contextPath}/Page/MIRANDA/target">Miranda       </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/ARIEL/target';"    ><a href="${contextPath}/Page/ARIEL/target">Ariel         </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/UMBRIEL/target';"  ><a href="${contextPath}/Page/UMBRIEL/target">Umbriel       </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/TITANIA/target';"  ><a href="${contextPath}/Page/TITANIA/target">Titania       </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/OBERON/target';"   ><a href="${contextPath}/Page/OBERON/target">Oberon        </a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="neptune_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#neptune_menu'); animateRight('#nomenclature_menu');">Previous</div>
+  <div class="sub_menu">
+    <div class="sub_menu">
+      <div class="parent_menu">Neptune</div>
+      <div class="sub_menu">
+        <div class="menu_item hidden" onClick="location.href='${contextPath}/Page/NEPTUNE/system';"                        ><a href="${contextPath}/Page/NEPTUNE/system">Neptunian System</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/Rings#neptune';"   ><a href="${contextPath}/Page/Rings#neptune" >Neptune Rings   </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/PROTEUS/target';"  ><a href="${contextPath}/Page/PROTEUS/target">Proteus         </a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/TRITON/target';"   ><a href="${contextPath}/Page/TRITON/target" >Triton          </a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="dwarf_menu" class="menu">
+  <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+  <div class="previous_menu" onClick="animateRight('#dwarf_menu'); animateRight('#nomenclature_menu');">Previous</div>
+  <div class="sub_menu">
+    <div class="sub_menu">
+      <div class="parent_menu">Dwarf Planets</div>
+      <div class="sub_menu">
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/PLUTO/system';" ><a href="${contextPath}/Page/PLUTO/system">Plutonian System</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/PLUTO/target';" ><a href="${contextPath}/Page/PLUTO/target">Pluto</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/CHARON/target';"><a href="${contextPath}/Page/CHARON/target">&nbsp;&nbsp;&nbsp;Charon</a></div>
+        <div class="menu_item" onClick="location.href='${contextPath}/Page/CERES/target';" ><a href="${contextPath}/Page/CERES/target">Ceres</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--<c:if test="${actionBean.ENABLE_ADMIN}"> 
+  <div id="admin_menu" class="menu">
+    <div class="home_menu" onClick="location.href='${contextPath}/';"><a href="${contextPath}/">Home</a></div>
+    <div class="previous_menu" onClick="animateRight('#admin_menu'); animateRight('#main_menu');"> Previous</div>
+    <div class="parent_menu">Admin Editor</div>
+    <div class="sub_menu"> 
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/Continent/';"          ><div class="next_arrow"> </div><span>Continents           </span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/ControlNet/';"         ><div class="next_arrow"> </div><span>Control Nets         </span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/Ethnicity/';"          ><div class="next_arrow"> </div><span>Ethnicities          </span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/FeatureNameRequest/';" ><div class="next_arrow"> </div><span>Feature Name Requests</span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/FeatureType/';"        ><div class="next_arrow"> </div><span>Feature Types        </span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/Feature/';"            ><div class="next_arrow"> </div><span>Features             </span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/Page/';"               ><div class="next_arrow"> </div><span>Pages                </span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/Quads/';"              ><div class="next_arrow"> </div><span>Quads                </span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/FeatureReference/';"   ><div class="next_arrow"> </div><span>References           </span></div>
+      <div class="menu_item" onClick="location.href='${contextPath}/admin/Target/';"             ><div class="next_arrow"> </div><span>Targets              </span></div>
+    </div>
+  </div>
+</c:if>-->
+
+<script type="text/javascript">
+      function disableMenu() {
+        // console.log("disableing the menu");
+        
+        $('#menu_mask').css({'z-index':'1'});
+        
+        window.setTimeout(function() {
+          $('#menu_mask').css({'z-index':'0'});
+        }, 450); // 450 is in ms, and is hair longer than the sliding animation takes.
+      }
+
+
+      function animateRight(current_item) {
+        disableMenu();
+        var $marginLefty = $(current_item);
+        $marginLefty.animate({
+          marginLeft: parseInt($marginLefty.css('marginLeft'), 10) == 0 ?
+            $marginLefty.outerWidth() :
+            0
+        }); 
+      } 
+
+      function animateLeft(current_item) {
+        disableMenu();
+        var $marginLefty = $(current_item);
+        $marginLefty.animate({
+          marginLeft: parseInt($marginLefty.css('marginLeft'), 10) == 0 ?
+            -$marginLefty.outerWidth() :
+            0
+        }); 
+      } 
+
+
+      $(document).ready(function() {
+          var contextPath   = '${contextPath}';
+          // var contextPath   = '';  // for testing when there is not context path
+          var current_url   = location.href;
+          
+          if(contextPath.length > 0) {
+            var page_location = current_url.substring(current_url.indexOf(contextPath) + contextPath.length); 
+          } else { // the context path is ''
+            var page_location = current_url.substring(current_url.indexOf("/", 7)); // offset 7 to miss the 'http://'
+          }
+          // console.log("pageLocation = " +page_location);
+          // console.log("current url = " +current_url);
+          
+          if(page_location.indexOf('?') != -1) { // remove any GET params if there are any
+            page_location = page_location.substring(0, page_location.indexOf('?')); 
+          }
+          // now we have a clean page_location to match on
+          
+          // console.log(current_url.indexOf(contextPath));
+          // console.log(page_location);
+          
+          
+          if($('title').html() == "Planetary Names: 404 Page not found") {
+            $('#main_menu').css('marginLeft', 0); 
+            return; // don't bother doing anything else.. its an error page
+          }
+          
+          /*<c:if test="${actionBean.ENABLE_ADMIN}"> 
+            // admin?  /admin/* -> show admin_menu
+            if(page_location.match("/admin/") != null) {
+              // console.log("ADMIN");
+              $('#admin_menu').css("marginLeft", 0); 
+              $('#main_menu').css('marginLeft', -190); 
+              // console.log("page_location " + page_location);
+
+              page_location = page_location.substring(1); // remove the first slash
+              page_location = page_location.substring(0,page_location.indexOf('/',page_location.indexOf('/')+1))+"/"; // remove everything after the 2nd slash
+              // console.log(page_location);
+              var menu_item =  $("div.menu_item[onClick*=" +page_location +"]").first();
+              // console.log(menu_item);
+              if(menu_item != null) menu_item.attr('id', 'current_location'); // highlight the current location
+            } else 
+          </c:if>*/ 
+          
+          if(typeof(featureSystem) === "string" && featureSystem != "") { // if featureSystem is defined or not
+            // console.log("feature system  a STRING and is set to :" +featureSystem);
+            if(featureSystem == "EARTH" || featureSystem == "VENUS" || featureSystem == "MERCURY") {
+              // these dont have a system page, so we'll need to show the nomenclaure menu
+              $('#nomenclature_menu').css('marginLeft', 0); 
+              $('#main_menu').css('marginLeft', -190);
+              
+              // lets also highlight the current page 
+              if( featureSystem == "EARTH" ) {
+                $("div.menu_item[onClick*=${contextPath}/Page/MOON/target]").attr('id', 'current_location');
+              } else if(featureSystem == "VENUS") {
+                $("div.menu_item[onClick*=${contextPath}/Page/VENUS/target]").attr('id', 'current_location');
+              } else {
+                $("div.menu_item[onClick*=${contextPath}/Page/MERCURY/target]").attr('id', 'current_location');
+              }
+              
+            } else {                
+              // console.log("on a feature page " +featureSystem);
+              // where on a feature page, so find the matching: /Page/*/system menu to show
+              var system_menu_item =  $("div.menu_item[onClick*=${contextPath}/Page/" +featureSystem +"/system]");
+              // console.log(system_menu_item);
+              
+              if(system_menu_item.length != 0) {
+                
+                var parent_menu = system_menu_item.parent();
+                while(parent_menu.attr('class') != "menu" ) { // Loop back up the dom, looking for this menu item's parent menu
+                  parent_menu = parent_menu.parent();
+                }
+                parent_menu.css('marginLeft', 0); // show the correct menu
+                
+                // using featureTarget variable (set by the feature page) to highlight the correct page in the menu
+                $("div.menu_item[onClick*=/Page/"+featureTarget +"/target]").attr('id', 'current_location');
+                
+                $('#nomenclature_menu').css('marginLeft', -190); // setup the two sub menus
+                $('#main_menu').css('marginLeft', -190);
+              } else {
+                // your lost.. so heres the main menu
+                // console.log("cant find: " +"div.menu_item[onClick*=${contextPath}/Page/" +featureSystem +"/system]");
+              $('#main_menu').css('marginLeft', 0);
+              }
+
+            }
+          }
+          
+          
+          // a system?   /Page/*/system -> show the system's 
+          // a target?  /Page/*/target  -> show the menu that contians the target link
+          // a page?   /Page/*          -> find the page and show its menu, else main menu
+          else if(page_location.match("/Page/*./target") != null || page_location.match("/Page/.*/system") != null || page_location.match("/Page/") != null) {
+            // console.log("its either a TARGET or Page..");
+            // var target_name = page_location.substring(page_location.lastIndexOf('/') + 1).toLowerCase();
+            
+            var sub_page_location = page_location.substring(page_location.lastIndexOf("/Page/")+6); // 6 is the length of /Page/
+            var target_name   = sub_page_location.substring(0, sub_page_location.lastIndexOf("/target")).toLowerCase();
+            
+            
+            // console.log("TARGET: " +target_name);
+            
+            // This works for now, because Targets are the only things that are 3 levels deep.
+            if(target_name.length != 0 || page_location.match("/Page/.*/system") != null) {
+              $('#nomenclature_menu').css('marginLeft', -190); 
+              // console.log("setting nomen menu to the left");
+            }
+            
+            
+            var attribute_to_look_for = page_location.substring(page_location.indexOf("/Page/"));
+
+            // console.log("attr = " +attribute_to_look_for);
+            if( attribute_to_look_for != "") { // need to do this check to make sure your not actually on "/Page/" which isnt valid
+
+              
+              var menu_item =  $("div.menu_item[onClick*=" +attribute_to_look_for +"]"); // look for menu_items that have the attribute';
+              // alert("Made the search " +menu_item);
+            } else {
+              var menu_item = Array(); // just pretend like it couldn't find a menu_item
+            }
+            // console.log(menu_item);
+            if(menu_item.length == 0 && attribute_to_look_for.indexOf('#') != -1) {
+              // lets do try the search again only this time omit the stuff after the '#'
+              menu_item =  $("div.menu_item[onClick*=" +attribute_to_look_for.substring(0,attribute_to_look_for.indexOf('#')) +"]");
+            }
+            
+            
+            if(menu_item.length != 0) {
+              menu_item.attr('id', 'current_location'); // highlight the current location
+              
+              var parent_menu = menu_item.parent();
+              while(parent_menu.attr('class') != "menu") { // Loop back up the dom, looking for this menu item's parent menu
+                parent_menu = parent_menu.parent();
+              }
+              // console.log(parent_menu);
+              if(parent_menu.attr('id') != "nomenclature_menu") { // this wont work for 3 levels deep in areas other than the nomenclature area
+                // console.log("need to look back one more level " + parent_menu.attr('id'));
+                attribute_to_look_for = parent_menu.attr('id');
+                var hopefully_the_parents_parent_menu = $("div.menu_item[onClick*=" +attribute_to_look_for +"]");
+
+                // console.log("div.menu_item[onClick*=" +attribute_to_look_for +"]");
+                // console.log(hopefully_the_parents_parent_menu);
+
+                // from this link we need its parent menu
+                while(hopefully_the_parents_parent_menu.attr('class') != "menu") { // Loop back up the dom, looking for this menu item's parent menu (which is the parents parent)
+                  hopefully_the_parents_parent_menu = hopefully_the_parents_parent_menu.parent();
+                }
+                // console.log(hopefully_the_parents_parent_menu);
+                if(hopefully_the_parents_parent_menu != null) {
+                  hopefully_the_parents_parent_menu.css('marginLeft', -190);
+                }                  
+              } // else were on the nomenclature_menu
+              
+              parent_menu.css('marginLeft', 0);
+              
+              // now we need to find the parents parent menu and set its left margin to -190
+              // currently this only applies for items under the nomenclature menu, however in the future pages could be more than two
+              // levels deep, so we need to consider a better way to find parent menus genericly.
+              
+              
+              // console.log("showing: " + parent_menu.toString() );
+              $('#main_menu').css('marginLeft', -190);
+            
+            } else if(page_location.match("/Page/") != null) { // theres no page menu so show the default main menu
+              $('#main_menu').css("marginLeft", 0); 
+            } 
+
+            
+          } else if(page_location == "/" ) { // home page
+              // console.log("MAIN MENU");
+              $('#main_menu').css("marginLeft", 0); 
+              $('#main_menu > div').first().attr('id', 'current_location'); // highlight the home page location
+
+              // console.log("attr = " +attribute_to_look_for);
+              
+              
+          } else { // other? /FeatureNameRequest  or /AdvancedSearch or /SearchResults or etc
+              // console.log("other page that isnt a /Page/ " +page_location);
+              var menu_item =  $("div.menu_item[onClick*=" +page_location.substring(1) +"]").first(); // only get the first one, its possible we'll also get a match in the admin area
+              
+              if(menu_item == null || menu_item.length == 0) { // the selector could return an empty array
+                // can't find it, so just display the main menu
+                $('#main_menu').css("marginLeft", 0); 
+                // console.log("cant find the page so showing the main menu");
+                
+              } else {
+                // console.log(menu_item);
+                menu_item.attr('id', 'current_location'); // highlight the current location
+                var parent_menu = menu_item.parent();
+                var counter = 3; // max levels to loop
+                while(parent_menu.attr('class') != "menu" && counter > 0) { // Loop back up the dom, looking for this menu item's parent menu
+                  // console.log("looking at " + parent_menu);
+                  parent_menu = parent_menu.parent();
+                  --counter;
+                }
+                // if(counter == 0) {
+                //   console.log("Cant find the parent menu!");
+                // }
+
+                // console.log(parent_menu);
+                parent_menu.css('marginLeft', 0);
+                // console.log(parent_menu);
+                if($('#main_menu').css("marginLeft") != "0px") { // if there is a parent menu, then its gotta be the main menu, so move it to the left
+                  // console.log("parent menu isn't the main menu");
+                  $('#main_menu').css("marginLeft", -190);
+                }
+                if(parent_menu == null) { // if all else fails, just use the main menu
+                  // console.log("default case");
+                  $('#main_menu').css("marginLeft", 0);
+                }
+              }
+          } 
+              
+          $('#simple_search_box').focus(function() {
+            $('#simple_search_box').removeClass('search_box_empty');
+          }); 
+          $('#simple_search_box').blur(function() {
+            var search_box = $('#simple_search_box');
+            if(search_box.val() == '') {
+              $('#simple_search_box').addClass('search_box_empty');
+            }
+          });
+      });
+</script>
+
