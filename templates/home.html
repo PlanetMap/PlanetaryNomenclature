@@ -124,17 +124,17 @@
     </tr>
   </table>
 
-<p class="home_page_sub_text">
-The Gazetteer of Planetary Nomenclature is maintained by the Planetary Geomatics Group of the <a href="http://astrogeology.usgs.gov/" title="astro">USGS Astrogeology Science Center</a>.
-This work is supported by the <a href="http://www.nasa.gov" title="nasa">National Aeronautics and Space Administration</a> under Contract No. NNH09AL18I issued through the Office of Space Science.
-This site is developed in cooperation with the <a  href="http://iau.org" title="iau">International Astronomical Union</a>.
-</p>
+  <p class="home_page_sub_text">
+  The Gazetteer of Planetary Nomenclature is maintained by the Planetary Geomatics Group of the <a href="http://astrogeology.usgs.gov/" title="astro">USGS Astrogeology Science Center</a>.
+  This work is supported by the <a href="http://www.nasa.gov" title="nasa">National Aeronautics and Space Administration</a> under Contract No. NNH09AL18I issued through the Office of Space Science.
+  This site is developed in cooperation with the <a  href="http://iau.org" title="iau">International Astronomical Union</a>.
+  </p>
 
-<script type="text/javascript">
-  $(document).ready(function () {
-    $('#rssFeed').rss('https://astrogeology.usgs.gov/rss/nomenclature', { limit: 6, ssl: true,
-      entryTemplate: '<li><a href="{url}">{title}</a><br/>{shortBodyPlain}</li>' });
-  });
-</script>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $('#rssFeed').rss('https://astrogeology.usgs.gov/rss/nomenclature', { limit: 6, ssl: true,
+        entryTemplate: '<li><a href="{url}">{title}</a><br/>{shortBodyPlain}</li>' });
+    });
+  </script>
 
 {% endblock %}

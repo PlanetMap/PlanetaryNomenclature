@@ -1,0 +1,41 @@
+{% extends 'page_template.html' %}
+
+{% block head %}{{ super() }}{% endblock %}
+
+{% block title %}Abbreviations for Continents, Countries, and Ethnic Groups{% endblock %}
+
+{% block body %}
+  <h2>Abbreviations for Continents, Countries, and Ethnic Groups</h2>
+  <hr/>
+  <p> In cases where a person was born in one country and conducted the work that made them famous in another, the
+      continent and ethnic/cultural group or country where the person became famous is recorded in the gazetteer. The
+      country of birth is recorded in the origin field of the gazetteer. (Effective April 2014)
+  </p>
+
+  <h3>Continents</h3>
+  <table class="cont_eth">
+    {% for continent in abbreviations %}
+      <tr>
+        <td><a href="#{{continent.continent_name}}">{{continent.continent_name}} ({{continent.continent_code}})</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+  <br/>
+
+  {% for continent in abbreviations %}    
+    <a name="{{continent.continent_name}}"></a>
+    <h3>{{continent.continent_name}} ({{continent.continent_code}})</h3>
+    <table class="cont_eth">
+      <tr>
+        <th>Ethnic/Cultural Group<br/>or Country</th>
+        <th>Abbreviation</th>
+      </tr>
+      {% for ethnicity in continent.ethnicities %}
+          <tr>
+            <td>{{ethnicity.ethnicity_name}}</td>
+            <td>{{ethnicity.ethnicity_code}}</td>
+          </tr>
+      {% endfor %}
+    </table>
+    {% endfor %}
+{% endblock %}

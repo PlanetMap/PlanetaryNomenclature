@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, SmallInteger, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
 from geoalchemy2 import Geometry
 from flask_sqlalchemy import SQLAlchemy
@@ -7,68 +8,81 @@ import nomen
 
 NomenDB = SQLAlchemy(nomen.NomenApp)
 
-class Pages(NomenDB.Model):
-	__tablename__   = 'pages'
-	page_id         = Column(Integer, primary_key=True, autoincrement=True)
-	page_name       = Column(String(1024))
-	section         = Column(String(1024))
-	target_id       = Column(Integer)
-	system_id       = Column(Integer)
-	content         = Column(String)
-	updated_on      = Column(DateTime(timezone=False))
+class Page(NomenDB.Model):
+    __tablename__   = 'pages'
+    page_id         = Column(Integer, primary_key=True, autoincrement=True)
+    page_name       = Column(String(1024))
+    section         = Column(String(1024))
+    target_id       = Column(Integer, ForeignKey('targets.target_id'))
+    system_id       = Column(Integer)
+    content         = Column(String)
+    updated_on      = Column(DateTime(timezone=False))
+    target          = relationship('Target', uselist=False, back_populates='page')
 
-class Features(NomenDB.Model):
+class Feature(NomenDB.Model):
     __tablename__       = 'features'
     feature_id          = Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024), nullable=False)
     clean_name          = Column(String(1024), nullable=False)
     legacy_name         = Column(String(1024))
-    ethnicity_id        = Column(Integer)
-    feature_type_id     = Column(Integer, nullable=False)
-    parent_id           = Column(Integer)
-    target_id           = Column(Integer, nullable=False)
-    feature_reference_id= Column(Integer)
+    ethnicity_id        = Column(Integer, ForeignKey('ethnicities.ethnicity_id'))
+    feature_type_id     = Column(Integer, ForeignKey('featuretypes.feature_type_id'), nullable=False)
+    parent_id           = Column(Integer, ForeignKey('features.feature_id'))
+    target_id           = Column(Integer, ForeignKey('targets.target_id'), nullable=False)
+    feature_reference_id= Column(Integer, ForeignKey('featurereferences.feature_reference_id'))
     description         = Column(String(1024))
-    approval_status_id  = Column(Integer)
+    approval_status_id  = Column(Integer, ForeignKey('approvalstatuses.approval_status_id'))
     approval_date       = Column(DateTime(timezone=False))
     origin              = Column(String(1024))
     updated_on          = Column(DateTime(timezone=False))
+    featuregeometries   = relationship('FeatureGeometry', back_populates='feature')
+    ethnicity           = relationship('Ethnicity')
+    featuretype         = relationship('FeatureType')
+    target              = relationship('Target')
+    featurereference    = relationship('FeatureReference')
+    approvalstatus      = relationship('ApprovalStatus')
+    parentfeature       = relationship('Feature', remote_side=feature_id, backref='sub_features')
     
-class Targets(NomenDB.Model):
-    __tablename__   = 'targets'
-    target_id       = Column(Integer, primary_key=True, autoincrement=True)
-    naif_id         = Column(Integer)
-    name            = Column(String(20), nullable=False)
-    system          = Column(String(20), nullable=False)
-    display_name    = Column(String(20))
-    a_axis_radius   = Column(DOUBLE_PRECISION)
-    b_axis_radius   = Column(DOUBLE_PRECISION)
-    c_axis_radius   = Column(DOUBLE_PRECISION)
-    description     = Column(String(1024))
-    show_map        = Column(Boolean)
-    mean_radius     = Column(DOUBLE_PRECISION)
-    use_triaxial    = Column(Boolean, default=False)
+class Target(NomenDB.Model):
+    __tablename__       = 'targets'
+    target_id           = Column(Integer, primary_key=True, autoincrement=True)
+    naif_id             = Column(Integer)
+    name                = Column(String(20), nullable=False)
+    system              = Column(String(20), nullable=False)
+    display_name        = Column(String(20))
+    a_axis_radius       = Column(DOUBLE_PRECISION)
+    b_axis_radius       = Column(DOUBLE_PRECISION)
+    c_axis_radius       = Column(DOUBLE_PRECISION)
+    description         = Column(String(1024))
+    show_map            = Column(Boolean)
+    mean_radius         = Column(DOUBLE_PRECISION)
+    use_triaxial        = Column(Boolean, default=False)
+    targetcoordinates   = relationship('TargetCoordinate', back_populates='target')
+    controlnets         = relationship('ControlNet', back_populates='target')
+    page                = relationship('Page', uselist=False, back_populates='target')
 
-class Approvalstatuses(NomenDB.Model):
+class ApprovalStatus(NomenDB.Model):
     __tablename__       = 'approvalstatuses'
     approval_status_id  = Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024))
     short_name          = Column(String(512))
 
-class Continents(NomenDB.Model):
+class Continent(NomenDB.Model):
     __tablename__   = 'continents'
     continent_id    = Column(Integer, primary_key=True, autoincrement=True)
     continent_name  = Column(String(1024), nullable=False)
     continent_code  = Column(String(20))
+    ethnicities     = relationship('Ethnicity', back_populates='continent')
 
-class Controlnets(NomenDB.Model):
+class ControlNet(NomenDB.Model):
     __tablename__   = 'controlnets'
     control_net_id  = Column(Integer, primary_key=True, autoincrement=True)
     name            = Column(String(64), nullable=False)
-    target_id       = Column(Integer)
+    target_id       = Column(Integer, ForeignKey('targets.target_id'))
     description     = Column(String(1024))
+    target          = relationship('Target', back_populates='controlnets')
 
-class Coordinatesystems(NomenDB.Model):
+class CoordinateSystem(NomenDB.Model):
     __tablename__       = 'coordinatesystems'
     coordinate_system_id= Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024))
@@ -76,35 +90,38 @@ class Coordinatesystems(NomenDB.Model):
     is_positive_east    = Column(Boolean)
     is_0_360            = Column(Boolean)
 
-class Featuregeometries(NomenDB.Model):
+class FeatureGeometry(NomenDB.Model):
     __tablename__       = 'featuregeometries'
     feature_geometry_id = Column(Integer, primary_key=True, autoincrement=True)
-    feature_id          = Column(Integer)
+    feature_id          = Column(Integer, ForeignKey('features.feature_id'))
     geometry            = Column(Geometry('GEOMETRY'), nullable=False)
     center_point        = Column(Geometry('GEOMETRY'), nullable=False)
     diameter            = Column(REAL, nullable=False)
-    control_net_id      = Column(Integer)
+    control_net_id      = Column(Integer, ForeignKey('controlnets.control_net_id'))
     created_on          = Column(DateTime(timezone=False))
     updated_on          = Column(DateTime(timezone=False))
     active              = Column(Boolean)
     northmostlatitude   = Column(DOUBLE_PRECISION) 
     southmostlatitude   = Column(DOUBLE_PRECISION) 
     eastmostlongitude   = Column(DOUBLE_PRECISION) 
-    westmostlongitude   = Column(DOUBLE_PRECISION) 
+    westmostlongitude   = Column(DOUBLE_PRECISION)
+    feature             = relationship('Feature', back_populates='featuregeometries')
+    controlnet          = relationship('ControlNet')
 
-class ethnicitiesd(NomenDB.Model):
+class Ethnicity(NomenDB.Model):
     __tablename__   = 'ethnicities'
     ethnicity_id    = Column(Integer, primary_key=True, autoincrement=True)
-    continent_id    = Column(Integer, nullable=False)
+    continent_id    = Column(Integer, ForeignKey('continents.continent_id'), nullable=False)
     ethnicity_name  = Column(String(1024), nullable=False)
     ethnicity_code  = Column(String(20))
+    continent       = relationship('Continent', back_populates='ethnicities')
 
-class featurereferences(NomenDB.Model):
+class FeatureReference(NomenDB.Model):
     __tablename__           = 'featurereferences'
     feature_reference_id    = Column(Integer, primary_key=True, autoincrement=True)
     name                    = Column(String(1024), nullable=False)
 
-class featurerequests(NomenDB.Model):
+class FeatureRequest(NomenDB.Model):
     __tablename__           = 'featurerequests'
     feature_request_id      = Column(Integer, primary_key=True, autoincrement=True)
     requester_name          = Column(String(1024))
@@ -116,25 +133,29 @@ class featurerequests(NomenDB.Model):
     submitted_on            = Column(DateTime(timezone=False))
     updated_on              = Column(DateTime(timezone=False))
     other_reference         = Column(String(1024))
-    feature_reference_id    = Column(Integer)
-    ethnicity_id            = Column(Integer)
-    feature_type_id         = Column(Integer)
+    feature_reference_id    = Column(Integer, ForeignKey('featurereferences.feature_reference_id'))
+    ethnicity_id            = Column(Integer, ForeignKey('ethnicities.ethnicity_id'))
+    feature_type_id         = Column(Integer, ForeignKey('featuretypes.feature_type_id'))
     feature_name            = Column(String(1024))
     feature_origin          = Column(String)
     geometry                = Column(Geometry('GEOMETRY'))
     center_point            = Column(Geometry('GEOMETRY'))
     diameter                = Column(REAL)
-    target_id               = Column(Integer)
+    target_id               = Column(Integer, ForeignKey('targets.target_id'))
     is_positive_east        = Column(Boolean)
+    featurereference        = relationship('FeatureReference')
+    ethnicity               = relationship('Ethnicity')
+    featuretype             = relationship('FeatureType')
+    target                  = relationship('Target')
 
-class featuretypes(NomenDB.Model):
+class FeatureType(NomenDB.Model):
     __tablename__   = 'featuretypes'
     feature_type_id = Column(Integer, primary_key=True, autoincrement=True)
     name            = Column(String(1024), nullable=False)
     code            = Column(String(1024))
     description     = Column(String(1024))
 
-class quads(NomenDB.Model):
+class Quad(NomenDB.Model):
     __tablename__   = 'quads'
     quad_id         = Column(Integer, primary_key=True, autoincrement=True)
     quad_group_id   = Column(Integer)
@@ -143,17 +164,34 @@ class quads(NomenDB.Model):
     link            = Column(String(1024))
     geometry        = Column(Geometry('GEOMETRY'))
 
-class targetcoordinates(NomenDB.Model):
+class TargetCoordinate(NomenDB.Model):
     __tablename__           = 'targetcoordinates'
     target_coordinate_id    = Column(Integer, primary_key=True, autoincrement=True)
-    target_id               = Column(Integer, nullable=False)
-    coordinate_system_id    = Column(Integer, nullable=False)
+    target_id               = Column(Integer, ForeignKey('targets.target_id'), nullable=False)
+    coordinate_system_id    = Column(Integer, ForeignKey('coordinatesystems.coordinate_system_id'), nullable=False)
     accepted_by_the_iau     = Column(Boolean)
     priority                = Column(Integer)
+    target                  = relationship('Target', back_populates='targetcoordinates')
+    coordinatesystem        = relationship('CoordinateSystem')
 
-def get_page(name):
-    class Page:
-        def __init__(self):
-            self.title = Pages.query.filter_by(page_name=name.upper(), section='TITLE').first().content
-            self.body = Pages.query.filter_by(page_name=name.upper(), section='BODY').first().content
-    return Page()
+
+def get_staticpage(page_name):
+    page_title = Page.query.filter_by(page_name=page_name.upper(), section='TITLE').first()
+    page_body = Page.query.filter_by(page_name=page_name.upper(), section='BODY').first()
+    return page_title.content, page_body.content
+
+
+## relationship loading techniques? -- joined eager loading
+## how is sqlalchemy generating individual statements? (repeated selects vs. joins, etc.)
+def get_abbreviations():
+    return Continent.query.order_by(Continent.continent_name).all()
+
+def get_references():
+    return FeatureReference.query.order_by(FeatureReference.feature_reference_id).all()
+
+# check-in about results
+def get_targets():
+    return Target.query.order_by(Target.display_name).all()
+
+def get_terms():
+    return 1

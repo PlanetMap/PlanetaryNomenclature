@@ -1,0 +1,19 @@
+
+{% extends 'page_template.html' %}
+
+{% block head %}{{ super() }}{% endblock %}
+
+{% block title %}Sources of Planetary Names{% endblock %}
+
+{% block body %}
+    <h2>Sources of Planetary Names</h2>
+    <hr/>
+    <table class="add_padding">
+        {% for reference in references %}
+        <tr>
+            <td>{{reference.feature_reference_id}}.</td>
+            <td>{{reference.name}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
