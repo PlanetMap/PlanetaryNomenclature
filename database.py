@@ -193,14 +193,17 @@ def get_featurereferences():
 def get_approvedtargets():
     return Target.query.join(Feature).order_by(Target.display_name).all()
 
+def get_targets():
+    return Target.query.order_by(Target.display_name).all()
+
 def get_featuretypes():
     return FeatureType.query.order_by(FeatureType.name).all()
-
-def get_ethnicities():
-    return Ethnicity.query.order_by(Ethnicity.ethnicity_code).all()
 
 def get_approvalstatuses():
     return ApprovalStatus.query.all()
 
 def get_systems():
     return Target.query.join(Feature).distinct(Target.system)
+
+def get_ethnicities():
+    return Ethnicity.query.order_by(Ethnicity.ethnicity_name).all()

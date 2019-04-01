@@ -22,6 +22,13 @@ def page_handler(page_name):
 													  feature_references = database.get_featurereferences())
 	elif (page_name == 'DescriptorTerms'):
 		return render_template('descriptorterms.html', terms = database.get_featuretypes())
+	elif (page_name == 'FeatureNameRequest'):
+		return render_template('featurenamerequest.html', systems = database.get_systems(),
+													      targets = database.get_targets(),
+														  feature_types = database.get_featuretypes(),
+														  continents = database.get_continents(),
+														  ethnicities = database.get_ethnicities(),
+														  feature_references = database.get_featurereferences())
 	elif (page_name == 'References'):
 		return render_template('references.html', references = database.get_featurereferences())
 	elif (page_name == 'TargetCoordinates'):

@@ -1,0 +1,439 @@
+{% extends 'page_template.html' %}
+
+{% block head %}{{ super() }}{% endblock %}
+
+{% block title %}Feature Name Request{% endblock %}
+
+{% block body %}
+
+  <script type="text/javascript">
+    // <!--
+    
+    /** Function that handles the selected system action when the async request returns. */
+    function update_selected_system(xml_data) {
+    //console.log($(xml_data).filter("#target_selection").find("option"));
+      $('#target_selection').html($(xml_data).filter("#target_selection").find("option")); // update the selection options
+      $('#target_selection').val(''); // reset the selection to the first choice which is "select one"
+    }
+
+    // not needed anymore after removing the control network
+    function update_selected_target(xml_data) {
+    //console.log($(xml_data).filter("#control_net_selection").find("option"));
+    //$('#control_net_selection').html($(xml_data).filter("#control_net_selection").find("option")); // update the selection options
+    //$('#control_net_selection').val(1); // reset the selection to the first choice which is "select one"
+    }
+    
+    function update_selected_continent(xml_data) {
+    // console.log($(xml_data).filter("#ethnicity_selection").find("option"));
+      $('#ethnicity_selection').html($(xml_data).filter("#ethnicity_selection").find("option")); // update the selection options
+      $('#ethnicity_selection').val(''); // reset the selection to the first choice which is "select one"
+    }
+    
+    /** Function to submit a request and invoke a handler when it completes. */
+    function make_request(event, handler) {
+      var params = $(".ajax").serialize();
+      if (event != null) {
+          $.post("/FeatureNameRequest/"+event, params,  handler); // $('form')[0].action
+      }
+    }
+    
+    // See if you need to display the other text input => only if they have "other.." selected in the drop down.
+    function check_for_other() {
+      if($('#feature_reference_selection option:selected').val() == "-1") {
+          $('#other_textbox').show(200);
+      } else {
+          $('#other_textbox').hide(200);
+      }
+    }
+    
+    // Toggle between The invalid/valid icons depending on the result of the ajax call.
+    //  if the wkt validates, then it is replaced with the cleaned up version from the server.
+    function display_wkt_validation(xml_data) {
+      // alert($(xml_data).filter("#wkt_result").html());
+      if($(xml_data).filter("#wkt_result").attr("result") == "true") {
+          $('#valid_wkt').removeClass("hidden");
+          $('#invalid_wkt').addClass("hidden");
+          $('#footprint_wkt').val($(xml_data).filter("#wkt_result").html())
+      } else {
+          $('#valid_wkt').addClass("hidden");
+          $('#invalid_wkt').removeClass("hidden");
+      }
+    }
+    
+    // Figures out which radio button is selected, and shows/hides the corresponding tabs
+    function display_wkt_or_points() {
+      // alert("checking wkt or points" +$('input#use_points').val());
+      if($('input[name=use_points]:checked').val() == "true") {
+          // use points is selected
+          $('#wkt').hide(200); 
+          $('#points').show(200);
+      } else {
+          // use wkt is selected
+          $('#wkt').show(200); 
+          $('#points').hide(200);
+      }          
+    }
+    
+    // Things to do when the page loads
+    $(document).ready(function() {
+      $('#wkt').hide();
+      $('#additionalUploadedImages').hide();
+      $('#other_textbox').hide();
+      //$('#valid_wkt').hide();
+      //$('#invalid_wkt').hide();
+      check_for_other();  // This will display the other text input if "Other.." was selected
+      display_wkt_or_points(); // Display the right tab
+    
+      // add the onchange elements 
+      $('#system_selection'           ).change( function() {
+          $('#target_selection').attr('disabled', true);
+          make_request('selected_system',    update_selected_system);    
+          $('#target_selection').removeAttr('disabled');
+      });
+      $('#continent_selection'        ).change( function() { 
+          $('#ethnicity_selection').attr('disabled', true);
+          make_request('selected_continent', update_selected_continent);  
+          $('#ethnicity_selection').removeAttr('disabled');
+      });
+      $('#feature_reference_selection').change( function() { check_for_other(); });
+      $('#use_points'                 ).change( function() { display_wkt_or_points(); });
+      $('#use_wkt'                    ).change( function() { display_wkt_or_points(); });
+      
+      
+      // wkt validation
+      $('#footprint_wkt').blur(  function() { make_request('validate_wkt', display_wkt_validation); });
+      $('#footprint_wkt').focus( function() { 
+          // dont show valid or invalid icons while they are focused on it.
+          $('#valid_wkt').hide();
+          $('#invalid_wkt').hide();
+      });
+    });
+    
+    // -->
+  </script>
+
+    <h3>Name Request Form</h3>
+    
+    <p> This form is intended for use by members of the professional science 
+        community who have a specific scientific need to name a planetary 
+        surface feature. The form covers the parameters needed for single and 
+        multiple name requests, and should be sufficient for routine requests. 
+        Unusual requests (those that involve new feature types, features on 
+        bodies that have no current nomenclature, etc.) should be directed to 
+        Tenielle Gaither via <a href="mailto:tgaither@usgs.gov?Subject=Request%20Form%20Question">email</a> 
+        rather than through this form.
+    </p>
+    <p><span class="red">*</span> Denotes a required field.</p>
+    
+    <form> 
+      <div id="errors">
+        <!--<s:errors/>-->
+        <!--<s:messages/>-->
+      </div>
+      <table class="name_request">
+        <tr class="title">
+          <th colspan="2">Information About You:</th>
+        </tr>
+        <tr class="first_row">
+          <td width="250px" class="label"><span class="label">Your Name:</span><span class="red">*</span></td>
+          <td><input type="text" name="featureNameRequest.requester_name" class="required"/></td>
+        </tr>
+        <tr>
+          <td class="label"><span class="label">Your Email:</span><span class="red">*</span></td>
+          <td><input type="text" name="featureNameRequest.requester_email" class="required"/></td>
+        </tr>
+        <tr>
+          <td class="label"><span class="label">Professional Affiliation:</span><span class="red">*</span></td>
+          <td><input type="text" name="featureNameRequest.requester_affiliation" class="required"/></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="instructions">
+            If you are a student, this proposal must be accompanied by a 
+            supporting statement from your advisor, verifying the need for 
+            the name and the usefulness of the name to the scientific and/or 
+            cartographic communities (see <a href="/Page/Rules">
+            IAU Rules and Conventions</a>). Statements can be sent to 
+            <a href="mailto:tgaither@usgs.gov?Subject=Request%20Form%20Question">Tenielle Gaither</a>.
+          </td>
+        </tr>
+      </table>
+
+      <table class="name_request">
+        <tr class="title">
+          <th colspan="2">Information About The Feature To Be Named:</th>
+        </tr>       
+        <tr class="first_row">
+          <td width="250px" class="label"><span class="label">System:</span><span class="red">*</span></td>
+          <td>
+            <select name="listHelper.selected_system" id="system_selection" class="required ajax">
+              <option value="">Select One</option>
+                {% for system in systems %}
+                  <option value="{{system.system}}">{{system.system}}</option>
+                {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="label"><span class="label">Target:</span><span class="red">*</span></td>
+          <td>
+            <select name="target_id" id="target_selection" class="required">
+              <option value="">Select One</option>
+                {% for target in targets %}
+                  <option value="{{target.target_id}}">{{target.display_name}}</option>
+                {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="label"><span class="label">Feature Type:</span><span class="red">*</span><br/>
+            <em>Descriptor terms are intended to represent morphological characteristics, not geological origin. 
+                The WGPSN does not endorse any specific scientific hypotheses when assigning descriptors.
+            </em></td>
+          <td>
+            <select name="feature_type_id" class="required">
+              <option value="">Select One</option>
+              {% for feature_type in feature_types %}
+                <option value="{{feature_type.feature_type_id}}">{{feature_type.name}}</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        
+        <tr>
+          <td colspan="2"><span class="label">Location:</span></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="instructions"><em>Please only use decimal degree formatting (e.g. 13.32)</em></td>
+        </tr>
+        <tr>
+          <td  class="label">
+            <label for="use_points">Lat/Lon
+              <input type="radio" name="use_points" value="true"  checked="true"  id="use_points"/>
+            </label><br/>
+            <label for="use_wkt">WKT
+              <input type="radio" name="use_points" value="false" id="use_wkt"/>
+            </label>
+          </td>
+          <td>
+            <div id="points">
+              <table>
+                <tr>
+                  <td>Northernmost Latitude:</td>
+                  <td><input type="text" name="starting_lat" size="5" /> °</td>
+                </tr>
+                <tr>
+                  <td>Southernmost Latitude:</td>
+                  <td><input type="text" name="ending_lat" size="5" /> °</td>
+                </tr>
+                <tr>
+                  <td>Westernmost Longitude:</td>
+                  <td><input type="text" name="starting_lon" size="5" /> °</td>
+                </tr>
+                <tr>
+                  <td>Easternmost Longitude:</td>
+                  <td><input type="text" name="ending_lon" size="5" /> °</td>
+                </tr>
+              </table>
+            </div>
+            <div id="wkt"><br/>
+              <label for="footprint_wkt">Well Known Text:</label><br/>
+              <input type="text"area name="footprint_wkt" id="footprint_wkt" cols="25" rows="3" class="ajax"/>
+              <img id="valid_wkt" class="hidden" 
+                                  src="{{ url_for('static', filename='images/layout/green_check.png') }}" 
+                                  alt="the wkt is valid"/>
+              <img id="invalid_wkt" class="hidden" 
+                                    src="{{ url_for('static', filename='images/layout/red_x.png') }}" 
+                                    alt="the wkt is invalid"/>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="label"><span class="label">Center Point:</span><span class="red">*</span></td>
+          <td>
+            <table>
+              <tr>
+                <td>Center Latitude:</td>
+                <td><input type="text" name="center_lat" size="5" class="required"/> °</td>
+              </tr>
+              <tr>
+                <td>Center Longitude:</td>
+                <td><input type="text" name="center_lon" size="5" class="required"/> °</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="label">
+            <span class="label">Positive East or West?:</span><br/>
+            <em>Please specify what coordinate system you used in the above longitudes.</em>
+          </td>
+          <td>
+            <select name="featureNameRequest.is_positive_east">
+              <option value="true">Positive East</option>
+              <option value="false">Positive West</option>
+            </select>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="label"><span class="label">Feature Size:</span>
+            <span class="red">*</span><br/><em>(longest dimension in km)</em></td>
+          <td><input type="text" name="featureNameRequest.diameter" class="required"/> (km)</td>
+        </tr>
+
+        <tr>
+          <td class="label"><span class="label">Justification:</span><span class="red">*</span> <br/>
+            <em>Features are named only when they have special scientific interest, and 
+                when the naming of such features is useful to the scientific and cartographic 
+                communities at large (see <a href="/Page/Rules">IAU Rules and Conventions</a>). 
+                Please submit a few words describing why this feature needs to be named. If the name 
+                is needed for a paper or map, please supply the name of the journal or map series.
+            </em>
+          </td>
+          <td>
+            <textarea name="featureNameRequest.justification" 
+              cols="40" rows="8" class="required" title="justification"></textarea>
+          </td>
+        </tr>
+        
+        <tr>
+          <td class="label"><span class="label">Additional Information:</span></td>
+          <td>
+            <textarea name="featureNameRequest.additional_info" 
+              cols="40" rows="8" title="additional information"></textarea>
+          </td>
+        </tr>
+             
+        <tr>
+          <td class="label">
+            <span class="label">Images:</span><span class="red">*</span><br/>
+            <em>Please attach an image with no annotation, and the same image with the 
+                boundary of the feature clearly marked. If the feature is a crater, 
+                please place a dot in the center of the crater to identify it. If the 
+                image is color, please use RGB, not CMYK.
+            </em>
+          </td>
+          <td>
+            <div id="uploadedImages" class="required">
+              <div>
+                <input type="file" name="images[0]">
+                <input type="text" name="images_descriptions[0]" onfocus="$(this).select();" value="With Feature Labeled">
+              </div>
+              <div>
+                <input type="file" name="images[1]">
+                <input type="text" name="images_descriptions[1]" onfocus="$(this).select();" value="No Feature Label">
+              </div>
+            </div>
+            <em>Maximum total upload size is 10mb. Preferred image format is JPG.</em>
+          </td>
+        </tr>
+      </table>
+
+
+      <table class="name_request">
+        <tr class="title">
+          <th colspan="2">Specific Name Suggestions</th>
+        </tr>
+        <tr>
+          <td colspan="2" class="instructions">
+            <em>
+              If you suggest a specific name, the source, continent, ethnic group, and
+              origin fields below must be completed. Please note that for small Martian
+              craters we are currently using only names of towns from countries that are
+              underrepresented in the nomenclature database.
+            </em>
+          </td>
+        </tr>
+        <tr>
+          <td class="label"><span class="label">Suggested Feature Name:</span> <br/>
+            <em>You may suggest a specific name for the feature, but there is no guarantee 
+                that the name will be approved (see <a href="/Page/Approved">
+                How Names are Approved</a>). The proposed name must fit the established theme 
+                for the feature type (see <a href="/Page/Categories">
+                Categories for Naming Features</a>).
+            </em>
+          </td>
+          <td><input type="text" name="featureNameRequest.feature_name"/></td>
+        </tr>
+        
+        <tr>
+          <td class="label"><span class="label">Source:</span> <br/>
+            <em>Accessible and authoritative sources, including Internet sources, 
+                are required for adopted names. Wikipedia is not sufficient as a 
+                source, but may be useful for identifying appropriate sources. 
+                It is preferable to use a source that is already established in 
+                the gazetteer (see drop down menu at right). If you need to 
+                enter a source that isn't listed, select "Other" at the bottom 
+                of the list and complete the dialog box.</em>
+          </td>
+          <td>
+            <select id="feature_reference_selection" name="feature_reference_id" style="width: 432px;">
+              <option value="">Select One</option>
+              {% for feature_reference in feature_references %}
+                <option value="{{feature_reference.feature_reference_id}}">
+                  [{{feature_reference.feature_reference_id}}] {{feature_reference.name}}
+                </option>
+              {% endfor %}
+              <option value="-1">Other...</option>
+            </select><br/>
+            <div id="other_textbox">
+              if Other: <input type="text" name="featureNameRequest.other_reference"/>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="label"><span class="label">Continent:</span> <br/>
+            <em>Continent or large geographic area that is the origin of the name 
+                (see <a href="/Abbreviations">Abbreviations</a>).
+            </em>
+          </td>
+          <td>
+            <select name="listHelper.selected_continent_id" id="continent_selection" class="ajax">
+              <option value="">Select One</option>
+              {% for continent in continents %}
+                <option value="{{continent.continent_id}}">{{continent.continent_name}}</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        
+        <tr>
+          <td class="label"><span class="label">Ethnic/Cultural Group or Country:</span><br/>
+            <em>Country or ethnic group that is the origin of the name 
+                (see <a href="/Abbreviations">Abbreviations</a>).</em>
+          </td>
+          <td>
+            <select name="ethnicity_id" id="ethnicity_selection" class="ajax">
+              <option value="">Select One</option>
+              {% for ethnicity in ethnicities %}
+                <option value="{{ethnicity.ethnicity_id}}">{{ethnicity.ethnicity_name}}</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        
+        <tr>
+          <td class="label"><span class="label">Origin:</span> <br/>
+            <em>Short description that includes the dates of birth and death if the name 
+                is of a person. Note that a person must be deceased for at least three 
+                years before their name can be considered (see <a href="/Page/Rules">
+                IAU Rules and Conventions</a>).
+            </em>
+          </td>
+          <td>
+            <textarea name="featureNameRequest.feature_origin" cols="25" rows="3" title="orign of the feature"></textarea>
+          </td>
+        </tr>
+        
+        <tr> 
+          <td colspan="2" class="submit_buttons">
+            <button type="submit" name="Submit" value="Submit">Submit</button>
+          </td> 
+        </tr> 
+
+      </table>
+    </form>
+
+{% endblock %}

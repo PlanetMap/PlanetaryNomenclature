@@ -690,3 +690,7 @@ div.olControlPanel {
 .olControlPanelEdit div { 
   float: left;
 }
+
+.hidden {
+  display: none;
+}

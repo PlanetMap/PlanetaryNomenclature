@@ -6,100 +6,92 @@
 
 {% block body %}
 
-<script type="text/javascript">
-  // <!--     
-  /** Function to submit a request and invoke a handler when it completes. */
-  function make_ajax_request(handler) {
-    var params = $("form").serialize();
-    $.post("${contextPath}/AdvancedSearch/ajax", params,  handler);
-  }
-  
-  /*function figure_out_if_we_should_disable_the_lat_lons_and_disable_them_or_not() {
-    if($('#target').val() == "") {
-    disable_lat_lon(true);
-    } else {
-    disable_lat_lon(false);
+  <script type="text/javascript">
+    // <!--     
+    /** Function to submit a request and invoke a handler when it completes. */
+    function make_ajax_request(handler) {
+      var params = $("form").serialize();
+      $.post("${contextPath}/AdvancedSearch/ajax", params,  handler);
     }
-  }*/
-  
-  function toggle_lat_long() {
-    if($('#target').val() == "") {
-      $('.latlon input').attr("disabled", true);
-      $('.latlon select').attr("disabled", true);
-    } else { // enable
-      $('.latlon input').removeAttr("disabled");
-      $('.latlon select').removeAttr("disabled");
+    
+    function toggle_lat_long() {
+      if($('#target').val() == "") {
+        $('.latlon input').attr("disabled", true);
+        $('.latlon select').attr("disabled", true);
+      } else { // enable
+        $('.latlon input').removeAttr("disabled");
+        $('.latlon select').removeAttr("disabled");
+      }
     }
-  }
-  
-  // uses the returned xml document to set the values for the coordinate system drop down.
-  function handle_ajax_for_target(xml_data) {
-    // console.log("setting coords"); 
-    var element = $(xml_data);
-    $('#is_0_360').val(element.filter("#is_0_360").html());
-    $('#is_positive_east').val(element.filter("#is_positive_east").html());
-    $('#is_planetographic').val(element.filter("#is_planetographic").html());
     
-    var current_target = $('#target').val();
-    var current_type   = $('#featureType').val();
-    
-    $('#target').html($(xml_data).filter("#target_selection").find("option")); // update the selection options
-    $('#featureType').html($(xml_data).filter("#featureType_selection").find("option")); // update the selection options
-    
-    
-    $('#target').val(current_target);    // reset the selection to the last choice
-    $('#featureType').val(current_type); // reset the selection to the last choice
-    toggle_lat_long()         
-  }
+    // uses the returned xml document to set the values for the coordinate system drop down.
+    function handle_ajax_for_target(xml_data) {
+      // console.log("setting coords"); 
+      var element = $(xml_data);
+      $('#is_0_360').val(element.filter("#is_0_360").html());
+      $('#is_positive_east').val(element.filter("#is_positive_east").html());
+      $('#is_planetographic').val(element.filter("#is_planetographic").html());
+      
+      var current_target = $('#target').val();
+      var current_type   = $('#featureType').val();
+      
+      $('#target').html($(xml_data).filter("#target_selection").find("option")); // update the selection options
+      $('#featureType').html($(xml_data).filter("#featureType_selection").find("option")); // update the selection options
+      
+      
+      $('#target').val(current_target);    // reset the selection to the last choice
+      $('#featureType').val(current_type); // reset the selection to the last choice
+      toggle_lat_long()         
+    }
 
-  function handle_ajax_for_system(xml_data) {
-    // console.log("setting coords"); 
-    var element = $(xml_data);
-    $('#is_0_360').val(element.filter("#is_0_360").html());
-    $('#is_positive_east').val(element.filter("#is_positive_east").html());
-    $('#is_planetographic').val(element.filter("#is_planetographic").html());
-    
-    $('#target').html($(xml_data).filter("#target_selection").find("option")); // update the selection options
-    
-    if( $('#target > option').size() == 2 ) {  // if there is only one other option other than 'all', so select it
-      $('#target > option:last-child').attr("selected", true);
-    } else { // else reset the selection to the first choice
-      $('#target').val(""); 
+    function handle_ajax_for_system(xml_data) {
+      // console.log("setting coords"); 
+      var element = $(xml_data);
+      $('#is_0_360').val(element.filter("#is_0_360").html());
+      $('#is_positive_east').val(element.filter("#is_positive_east").html());
+      $('#is_planetographic').val(element.filter("#is_planetographic").html());
+      
+      $('#target').html($(xml_data).filter("#target_selection").find("option")); // update the selection options
+      
+      if( $('#target > option').size() == 2 ) {  // if there is only one other option other than 'all', so select it
+        $('#target > option:last-child').attr("selected", true);
+      } else { // else reset the selection to the first choice
+        $('#target').val(""); 
+      }
+      toggle_lat_long()
+      
+      $('#featureType').html($(xml_data).filter("#featureType_selection").find("option")); // update the selection options
+      $('#featureType').val(""); // reset the selection to the last choice
     }
-    toggle_lat_long()
     
-    $('#featureType').html($(xml_data).filter("#featureType_selection").find("option")); // update the selection options
-    $('#featureType').val(""); // reset the selection to the last choice
-  }
-  
-  $(document).ready(function() { 
-    // target and system are mutually excuslive 
-    $('#system').change( function() { 
-      make_ajax_request(handle_ajax_for_system);
+    $(document).ready(function() { 
+      // target and system are mutually excuslive 
+      $('#system').change( function() { 
+        make_ajax_request(handle_ajax_for_system);
+      });
+      $('#target').change( function() { 
+        make_ajax_request(handle_ajax_for_target);
+      });
+      
+      // ethnicity and continent are mutually excuslive 
+      $('#ethnicity').change( function() { disable($('#ethnicity'), $('#continent'), false); });
+      $('#continent').change( function() { disable($('#continent'), $('#ethnicity'), false); });
+      
+      toggle_lat_long();
+      
+      // need to set these manually for some reason stripes has an issue with these post variables and select options
+      /*<c:if test="${actionBean.is_planetographic != null}">
+      $('#is_planetographic').val("${actionBean.is_planetographic}");
+      </c:if>
+      <c:if test="${actionBean.is_positive_east != null}">
+      $('#is_positive_east').val("${actionBean.is_positive_east}");
+      </c:if>
+      <c:if test="${actionBean.is_0_360 != null}">
+      $('#is_0_360').val("${actionBean.is_0_360}");
+      </c:if>*/     
     });
-    $('#target').change( function() { 
-      make_ajax_request(handle_ajax_for_target);
-    });
-    
-    // ethnicity and continent are mutually excuslive 
-    $('#ethnicity').change( function() { disable($('#ethnicity'), $('#continent'), false); });
-    $('#continent').change( function() { disable($('#continent'), $('#ethnicity'), false); });
-    
-    toggle_lat_long();
-    
-    // need to set these manually for some reason stripes has an issue with these post variables and select options
-    /*<c:if test="${actionBean.is_planetographic != null}">
-    $('#is_planetographic').val("${actionBean.is_planetographic}");
-    </c:if>
-    <c:if test="${actionBean.is_positive_east != null}">
-    $('#is_positive_east').val("${actionBean.is_positive_east}");
-    </c:if>
-    <c:if test="${actionBean.is_0_360 != null}">
-    $('#is_0_360').val("${actionBean.is_0_360}");
-    </c:if>*/     
-  });
-  // -->
-</script>
+    // -->
+  </script>
 
   <p>This search engine searches the database of planetary surface feature
       names. Here are links with more information about the <a href="Page/Planets">names of planets and their
