@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
+from sqlalchemy import create_engine, func, Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
@@ -57,6 +57,7 @@ class Target(NomenDB.Model):
     show_map            = Column(Boolean)
     mean_radius         = Column(DOUBLE_PRECISION)
     use_triaxial        = Column(Boolean, default=False)
+    features            = relationship('Feature', back_populates ='target')
     targetcoordinates   = relationship('TargetCoordinate', back_populates='target')
     controlnets         = relationship('ControlNet', back_populates='target')
     page                = relationship('Page', uselist=False, back_populates='target')
@@ -180,18 +181,26 @@ def get_staticpage(page_name):
     page_body = Page.query.filter_by(page_name=page_name.upper(), section='BODY').first()
     return page_title.content, page_body.content
 
-
 ## relationship loading techniques? -- joined eager loading
 ## how is sqlalchemy generating individual statements? (repeated selects vs. joins, etc.)
-def get_abbreviations():
+def get_continents():
     return Continent.query.order_by(Continent.continent_name).all()
 
-def get_references():
+def get_featurereferences():
     return FeatureReference.query.order_by(FeatureReference.feature_reference_id).all()
 
 # check-in about results
-def get_targets():
-    return Target.query.order_by(Target.display_name).all()
+def get_approvedtargets():
+    return Target.query.join(Feature).order_by(Target.display_name).all()
 
-def get_terms():
-    return 1
+def get_featuretypes():
+    return FeatureType.query.order_by(FeatureType.name).all()
+
+def get_ethnicities():
+    return Ethnicity.query.order_by(Ethnicity.ethnicity_code).all()
+
+def get_approvalstatuses():
+    return ApprovalStatus.query.all()
+
+def get_systems():
+    return Target.query.join(Feature).distinct(Target.system)

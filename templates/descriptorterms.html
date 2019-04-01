@@ -1,0 +1,31 @@
+{% extends 'page_template.html' %}
+
+{% block head %}{{ super() }}{% endblock %}
+
+{% block title %}Descriptor Terms (Feature Types){% endblock %}
+
+{% block body %}
+  <h2>Descriptor Terms (Feature Types)</h2>
+  <p>Descriptor terms are intended to represent morphological characteristics, not
+      geological origin. The WGPSN does not endorse any specific scientific
+      hypotheses when assigning descriptors.
+  </p>
+  <hr/>
+  <p><a href="images/Farouk_drawings_composite.pdf">Chart of landform types</a> 
+      created in 1979 by Anne Gifford, who was then at the Air and Space Museum, 
+      Smithsonian Institution, Washington, D.C.
+  </p>
+  <hr/>
+  <table class="add_padding">
+    <tr class="featureTypesHeader">
+    <th>Feature (Designation)</th>
+    <th>Description</th>
+    </tr>
+    {% for feature_type in terms %}
+      <tr>
+        <td class="nobr">{{feature_type.name}} {{feature_type.code}}</td>
+        <td>{{feature_type.description}}</td>
+      </tr>
+      {% endfor %}
+  </table>
+{% endblock %}
