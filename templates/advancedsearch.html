@@ -93,6 +93,8 @@
     // -->
   </script>
 
+  <h2>Advanced Nomenclature Search</h2>
+  <hr/>
   <p>This search engine searches the database of planetary surface feature
       names. Here are links with more information about the <a href="Page/Planets">names of planets and their
       moons</a> and information about the <a href="Page/Rings">names of rings and ring gaps</a>.  </p>
@@ -127,7 +129,7 @@
         <td>
           <select name="target" id="target">
             <option value="">All</option>
-            {% for target in approvedTargets %}
+            {% for target in approved_targets %}
               <option value="{{target.display_name}}">{{target.display_name}}</option>
             {% endfor %}
           </select>

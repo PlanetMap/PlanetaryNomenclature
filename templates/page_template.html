@@ -91,7 +91,11 @@
                       </td>
                       <td class="layout" id="layout_content_middle_right_header">
                         <div id="layout_content_wrapper">
-                          {% block body %} {{ page_body }} {% endblock %}
+                          {% block body %} 
+                            <h2>{{ page_title }}</h2>
+                            <hr />
+                            {{ page_body }} 
+                          {% endblock %}
                         </div>
                       </td>
                       <td class="layout" id="layout_content_middle_right_corner" rowspan="2"></td>

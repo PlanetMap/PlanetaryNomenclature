@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, func, Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
