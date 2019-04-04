@@ -1,0 +1,39 @@
+{% extends 'page_template.html' %}
+
+{% block head %}{{ super() }}{% endblock %}
+
+{% block title %}Coordinate Systems for Planets and Satellites{% endblock %}
+
+{% block body %}
+  <h2>Coordinate Systems for Planets and Satellites</h2>
+  <hr/>
+  <p>
+    Below is a list of the IAU-accepted coordinate systems for the planets and satellites.  
+  </p>
+  
+  <table class="target_coord">
+    <tr class="row_header">
+      <th>Target</th>
+      <th>Coordinate Systems</th>
+      <th>Control Networks</th>
+    </tr>
+
+    {% for target in targets %}
+      {% if target.system != 'ASTEROIDS' %}
+        <tr>
+          <td>{{target.display_name}}</td>
+          <td>{% for coordinate in target.targetcoordinates %}{{coordinate.coordinatesystem.name}}<br/>{% endfor %}</td>
+          <!--<c:forEach items="${target.coordinates}" var="target_coordinate">-->
+            <!--<c:out value="${target_coordinate.coordinate_system.name}"/><br/>-->
+          <!--</c:forEach>-->
+          <td class="center">{% for controlnet in target.controlnets %}{{controlnet.name}}<br/>{% endfor %}</td>
+          <!--<c:forEach items="${target.controlnets}" var="controlnet"><c:out value="${controlnet.name}"/><br/></c:forEach>-->
+        </tr>
+      {% endif %}
+    {% endfor %}
+  </table>
+  
+  <p>
+    <strong>Note:</strong> The IAU has a separate system for small bodies.  Coordinates and systems for these targets will be updated when data are available.
+  </p>
+{% endblock %}
