@@ -8,7 +8,7 @@ import nomen
 
 NomenDB = SQLAlchemy(nomen.NomenApp)
 
-class Page(NomenDB.Model):
+class PagePart(NomenDB.Model):
     __tablename__   = 'pages'
     page_id         = Column(Integer, primary_key=True, autoincrement=True)
     page_name       = Column(String(1024))
@@ -17,7 +17,76 @@ class Page(NomenDB.Model):
     system_id       = Column(Integer)
     content         = Column(String)
     updated_on      = Column(DateTime(timezone=False))
-    target          = relationship('Target', uselist=False, back_populates='page')
+    target          = relationship('Target', back_populates='page_parts')
+
+    def get_content_byname(page_name):
+        class BasicPage():
+            def __init__(self):
+                self.title = ''
+                self.body = ''
+                self.javascript = ''
+        
+        page_parts = PagePart.query.filter_by(page_name=page_name.upper()).all()
+        page = BasicPage()
+
+        for part in page_parts:
+            if part.section == 'TITLE':
+                page.title = part.content
+            elif part.section == 'BODY':
+                page.body = part.content
+            elif part.section == 'JAVASCRIPT':
+                page.javascript = part.content
+            else:
+                pass
+
+        return page
+
+    def get_content_bysystem(system_name):
+        class SystemPage():
+            def __init__(self):
+                self.title = ''
+                self.body = ''
+
+        page_parts = PagePart.query.filter_by(system_id=system)
+        page = SystemPage()
+        
+        for part in page_parts:
+            if part.section == 'TITLE':
+                page.title = part.content
+            elif part.section == 'BODY':
+                page.body = part.content
+            else:
+                pass
+
+        return page
+
+    def get_content_bytarget(target_name):
+        class TargetPage():
+            def __init__(self):
+                self.title = ''
+                self.body = ''
+                self.javascript = ''
+                self.feature_related = ''
+                self.related = ''
+
+        target = Target.query.filter_by(name=target_name.upper()).first()       
+        page = TargetPage()
+
+        for part in target.page_parts:
+            if part.section == 'TITLE':
+                page.title = part.content
+            elif part.section == 'BODY':
+                page.body = part.content
+            elif part.section == 'JAVASCRIPT':
+                page.javascript = part.content
+            elif part.section == 'FEATURE_RELATED':
+                page.feature_related = part.content
+            elif part.section == 'RELATED':
+                page.related = part.content
+            else:
+                pass
+
+        return page
 
 class Feature(NomenDB.Model):
     __tablename__       = 'features'
@@ -43,6 +112,7 @@ class Feature(NomenDB.Model):
     approvalstatus      = relationship('ApprovalStatus')
     parentfeature       = relationship('Feature', remote_side=feature_id, backref='sub_features')
     
+
 class Target(NomenDB.Model):
     __tablename__       = 'targets'
     target_id           = Column(Integer, primary_key=True, autoincrement=True)
@@ -60,7 +130,13 @@ class Target(NomenDB.Model):
     features            = relationship('Feature', back_populates ='target')
     targetcoordinates   = relationship('TargetCoordinate', back_populates='target')
     controlnets         = relationship('ControlNet', back_populates='target')
-    page                = relationship('Page', uselist=False, back_populates='target')
+    page_parts          = relationship('PagePart', back_populates='target')
+
+    def get_all():
+        return Target.query.order_by(Target.display_name)
+
+    def get_approved():
+        return Target.query.join(Feature).order_by(Target.display_name)
 
 class ApprovalStatus(NomenDB.Model):
     __tablename__       = 'approvalstatuses'
@@ -68,12 +144,18 @@ class ApprovalStatus(NomenDB.Model):
     name                = Column(String(1024))
     short_name          = Column(String(512))
 
+    def get_all():
+        return ApprovalStatus.query.all()
+
 class Continent(NomenDB.Model):
     __tablename__   = 'continents'
     continent_id    = Column(Integer, primary_key=True, autoincrement=True)
     continent_name  = Column(String(1024), nullable=False)
     continent_code  = Column(String(20))
     ethnicities     = relationship('Ethnicity', back_populates='continent')
+
+    def get_all():
+        return Continent.query.order_by(Continent.continent_name)
 
 class ControlNet(NomenDB.Model):
     __tablename__   = 'controlnets'
@@ -117,10 +199,16 @@ class Ethnicity(NomenDB.Model):
     ethnicity_code  = Column(String(20))
     continent       = relationship('Continent', back_populates='ethnicities')
 
+    def get_all():
+        return Ethnicity.query.order_by(Ethnicity.ethnicity_name)
+
 class FeatureReference(NomenDB.Model):
     __tablename__           = 'featurereferences'
     feature_reference_id    = Column(Integer, primary_key=True, autoincrement=True)
     name                    = Column(String(1024), nullable=False)
+
+    def get_all():
+        return FeatureReference.query.order_by(FeatureReference.feature_reference_id)
 
 class FeatureRequest(NomenDB.Model):
     __tablename__           = 'featurerequests'
@@ -156,6 +244,15 @@ class FeatureType(NomenDB.Model):
     code            = Column(String(1024))
     description     = Column(String(1024))
 
+    def get_all():
+        return FeatureType.query.order_by(FeatureType.name)
+
+    def get_bytarget(target_name):
+        return FeatureType.query.join(Feature)\
+                                .join(Target)\
+                                .filter_by(name=target_name)\
+                                .order_by(FeatureType.name)
+
 class Quad(NomenDB.Model):
     __tablename__   = 'quads'
     quad_id         = Column(Integer, primary_key=True, autoincrement=True)
@@ -175,35 +272,49 @@ class TargetCoordinate(NomenDB.Model):
     target                  = relationship('Target', back_populates='targetcoordinates')
     coordinatesystem        = relationship('CoordinateSystem')
 
+class System():
+    def get_all():
+        return Target.query.join(Feature).distinct(Target.system)
 
-def get_staticpage(page_name):
-    page_title = Page.query.filter_by(page_name=page_name.upper(), section='TITLE').first()
-    page_body = Page.query.filter_by(page_name=page_name.upper(), section='BODY').first()
-    return page_title.content, page_body.content
+
+
+
+
+
+
+#def get_staticpage(page_name):
+#    page_title = PagePart.query.filter_by(page_name=page_name.upper(), section='TITLE').first()
+#    page_body = PagePart.query.filter_by(page_name=page_name.upper(), section='BODY').first()
+#    return page_title.content, page_body.content
 
 ## relationship loading techniques? -- joined eager loading
 ## how is sqlalchemy generating individual statements? (repeated selects vs. joins, etc.)
-def get_continents():
-    return Continent.query.order_by(Continent.continent_name).all()
+#def get_continents():
+#    return Continent.query.order_by(Continent.continent_name)
 
-def get_featurereferences():
-    return FeatureReference.query.order_by(FeatureReference.feature_reference_id).all()
+#def get_featurereferences():
+#    return FeatureReference.query.order_by(FeatureReference.feature_reference_id).all()
 
 # check-in about results
-def get_approvedtargets():
-    return Target.query.join(Feature).order_by(Target.display_name).all()
+#def get_approvedtargets():
+#    return Target.query.join(Feature).order_by(Target.display_name).all()
 
-def get_targets():
-    return Target.query.order_by(Target.display_name).all()
+#def get_targets():
+#    return Target.query.order_by(Target.display_name)
 
-def get_featuretypes():
-    return FeatureType.query.order_by(FeatureType.name).all()
+#def get_featuretypes():
+#    return FeatureType.query.order_by(FeatureType.name)
 
-def get_approvalstatuses():
-    return ApprovalStatus.query.all()
+#def get_approvalstatuses():
+#    return ApprovalStatus.query.all()
 
-def get_systems():
-    return Target.query.join(Feature).distinct(Target.system)
+#def get_systems():
+#    return Target.query.join(Feature).distinct(Target.system)
 
-def get_ethnicities():
-    return Ethnicity.query.order_by(Ethnicity.ethnicity_name).all()
+#def get_ethnicities():
+#    return Ethnicity.query.order_by(Ethnicity.ethnicity_name)
+
+
+
+
+
