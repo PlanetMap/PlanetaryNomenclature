@@ -1,0 +1,18 @@
+{% extends 'page_template.html' %}
+
+{% block head %}{{ super() }}{% endblock %}
+
+{% block body %}
+    
+  <h2>{{ page_title }}</h2>
+  <hr/>
+
+  {{ page_body }}
+
+  {{ page_related }}
+
+  <script>
+    {{ page_javascript }}
+  </script>
+
+  {% endblock %}

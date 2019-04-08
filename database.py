@@ -19,49 +19,8 @@ class PagePart(NomenDB.Model):
     updated_on      = Column(DateTime(timezone=False))
     target          = relationship('Target', back_populates='page_parts')
 
-    def get_content_byname(page_name):
-        class BasicPage():
-            def __init__(self):
-                self.title = ''
-                self.body = ''
-                self.javascript = ''
-        
-        page_parts = PagePart.query.filter_by(page_name=page_name.upper()).all()
-        page = BasicPage()
-
-        for part in page_parts:
-            if part.section == 'TITLE':
-                page.title = part.content
-            elif part.section == 'BODY':
-                page.body = part.content
-            elif part.section == 'JAVASCRIPT':
-                page.javascript = part.content
-            else:
-                pass
-
-        return page
-
-    def get_content_bysystem(system_name):
-        class SystemPage():
-            def __init__(self):
-                self.title = ''
-                self.body = ''
-
-        page_parts = PagePart.query.filter_by(system_id=system)
-        page = SystemPage()
-        
-        for part in page_parts:
-            if part.section == 'TITLE':
-                page.title = part.content
-            elif part.section == 'BODY':
-                page.body = part.content
-            else:
-                pass
-
-        return page
-
-    def get_content_bytarget(target_name):
-        class TargetPage():
+    def get_page(page_type, name):
+        class Page():
             def __init__(self):
                 self.title = ''
                 self.body = ''
@@ -69,10 +28,21 @@ class PagePart(NomenDB.Model):
                 self.feature_related = ''
                 self.related = ''
 
-        target = Target.query.filter_by(name=target_name.upper()).first()       
-        page = TargetPage()
 
-        for part in target.page_parts:
+        page = Page()
+        page_parts = []
+
+        if page_type == 'basic':
+            page_parts = PagePart.query.filter_by(page_name=name.upper()).all()
+        elif page_type == 'system':
+            page_parts = PagePart.query.join(Target).filter_by(Target.system == name.upper()).all()
+        elif page_type == 'target':
+            page_parts = Target.query.filter_by(name=name.upper()).first().page_parts
+        else:
+            pass 
+        
+
+        for part in page_parts:
             if part.section == 'TITLE':
                 page.title = part.content
             elif part.section == 'BODY':
@@ -86,7 +56,12 @@ class PagePart(NomenDB.Model):
             else:
                 pass
 
+        #target = Target.query.filter_by(name=target_name.upper()).first()       
+        #page = TargetPage()
+        
         return page
+
+
 
 class Feature(NomenDB.Model):
     __tablename__       = 'features'
@@ -275,46 +250,3 @@ class TargetCoordinate(NomenDB.Model):
 class System():
     def get_all():
         return Target.query.join(Feature).distinct(Target.system)
-
-
-
-
-
-
-
-#def get_staticpage(page_name):
-#    page_title = PagePart.query.filter_by(page_name=page_name.upper(), section='TITLE').first()
-#    page_body = PagePart.query.filter_by(page_name=page_name.upper(), section='BODY').first()
-#    return page_title.content, page_body.content
-
-## relationship loading techniques? -- joined eager loading
-## how is sqlalchemy generating individual statements? (repeated selects vs. joins, etc.)
-#def get_continents():
-#    return Continent.query.order_by(Continent.continent_name)
-
-#def get_featurereferences():
-#    return FeatureReference.query.order_by(FeatureReference.feature_reference_id).all()
-
-# check-in about results
-#def get_approvedtargets():
-#    return Target.query.join(Feature).order_by(Target.display_name).all()
-
-#def get_targets():
-#    return Target.query.order_by(Target.display_name)
-
-#def get_featuretypes():
-#    return FeatureType.query.order_by(FeatureType.name)
-
-#def get_approvalstatuses():
-#    return ApprovalStatus.query.all()
-
-#def get_systems():
-#    return Target.query.join(Feature).distinct(Target.system)
-
-#def get_ethnicities():
-#    return Ethnicity.query.order_by(Ethnicity.ethnicity_name)
-
-
-
-
-

@@ -47,14 +47,14 @@ def targcoord_handler():
 
 @NomenApp.route('/Page/<page_name>')
 def basicpage_handler(page_name):
-	page = db.PagePart.get_content_byname(page_name)
+	page = db.PagePart.get_page("basic", page_name)
 	return render_template('page_template.html', page_title = Markup(page.title),
 												page_body = Markup(page.body),
 												page_javascript = Markup(page.javascript))
 
 @NomenApp.route('/Page/<target_name>/target')
 def targetpage_handler(target_name):
-	page = db.PagePart.get_content_bytarget(target_name)
+	page = db.PagePart.get_page("target", target_name)
 	feature_types = db.FeatureType.get_bytarget(target_name)
 	return render_template('target_template.html', page_title = Markup(page.title),
 												page_body = Markup(page.body),
@@ -66,7 +66,9 @@ def targetpage_handler(target_name):
 
 @NomenApp.route('/Page/<system_name>/system')
 def system_handler(system_name):
-	return 1
+	page = db.PagePart.get_page("system", system_name)
+	return render_template('system_template.html', page_title = Markup(page.title),
+												page_body = Markup(page.body))
 
 
 if __name__ == "__main__":
