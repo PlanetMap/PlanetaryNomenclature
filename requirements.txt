@@ -1,3 +1,6 @@
 flask
 flask-sqlalchemy
 geoalchemy2
+pytest
+selenium
+psycopg2

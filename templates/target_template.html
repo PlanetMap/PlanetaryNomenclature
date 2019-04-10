@@ -1,0 +1,44 @@
+{% extends 'page_template.html' %}
+
+{% block head %}{{ super() }}{% endblock %}
+
+{% block body %}
+    
+  <h2>Target: {{ page_title }} </h2>
+  <hr/>
+
+  {{ page_body }}
+   
+  <div class="feature_types">
+    <h3>Search by Feature Types</h3>
+    <ul>
+      <li><a href="/SearchResults?target={{target_name}}">All Features</a></li>
+      {% for feature_type in feature_types %}
+        <li>
+          <a href="/SearchResults?target={{target_name}}&featureType={{feature_type.name}}" title="{{feature_type.name}}">
+              {{ feature_type.name }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <a href="/Page/Moon1to1MAtlas"><img src="https://via.placeholder.com/400"></a>
+
+  {{ page_related }}
+
+  <script>
+    {{ page_javascript }}
+  </script>
+
+  <!-- for search results submission -->      
+  <!--<c:forEach items="${actionBean.listHelper.featureTypes}" var="currFeatureType">
+    <li>
+      <a href="${contextPath}/SearchResults?target=${actionBean.listHelper.selected_target.name}&featureType=<c:out value="${currFeatureType.name}"/>" title="<c:out value="${currFeatureType.description}"/>">
+        <c:out value="${currFeatureType.name}"/>
+      </a>
+    </li>
+  </c:forEach>-->
+
+
+{% endblock %}
