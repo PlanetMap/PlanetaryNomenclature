@@ -14,10 +14,11 @@ class PagePart(NomenDB.Model):
     page_name       = Column(String(1024))
     section         = Column(String(1024))
     target_id       = Column(Integer, ForeignKey('targets.target_id'))
-    system_id       = Column(Integer)
+    system_id       = Column(Integer, ForeignKey('targets.target_id'))
     content         = Column(String)
     updated_on      = Column(DateTime(timezone=False))
-    target          = relationship('Target', back_populates='page_parts')
+    target          = relationship('Target', foreign_keys=[target_id])
+    system          = relationship('Target', foreign_keys=[system_id])
 
     def get_page(page_type, name):
         class Page():
@@ -35,9 +36,9 @@ class PagePart(NomenDB.Model):
         if page_type == 'basic':
             page_parts = PagePart.query.filter_by(page_name=name.upper()).all()
         elif page_type == 'system':
-            page_parts = PagePart.query.join(Target).filter_by(Target.system == name.upper()).all()
+            page_parts = PagePart.query.join(PagePart.system).filter_by(system=name.upper()).all()
         elif page_type == 'target':
-            page_parts = Target.query.filter_by(name=name.upper()).first().page_parts
+            page_parts = PagePart.query.join(PagePart.target).filter_by(name=name.upper()).all()
         else:
             pass 
         
@@ -56,9 +57,6 @@ class PagePart(NomenDB.Model):
             else:
                 pass
 
-        #target = Target.query.filter_by(name=target_name.upper()).first()       
-        #page = TargetPage()
-        
         return page
 
 
@@ -105,7 +103,6 @@ class Target(NomenDB.Model):
     features            = relationship('Feature', back_populates ='target')
     targetcoordinates   = relationship('TargetCoordinate', back_populates='target')
     controlnets         = relationship('ControlNet', back_populates='target')
-    page_parts          = relationship('PagePart', back_populates='target')
 
     def get_all():
         return Target.query.order_by(Target.display_name)
@@ -248,5 +245,6 @@ class TargetCoordinate(NomenDB.Model):
     coordinatesystem        = relationship('CoordinateSystem')
 
 class System():
+
     def get_all():
         return Target.query.join(Feature).distinct(Target.system)
