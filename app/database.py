@@ -1,14 +1,13 @@
-from sqlalchemy import create_engine, Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
 from geoalchemy2 import Geometry
 from flask_sqlalchemy import SQLAlchemy
-import nomen
 
-NomenDB = SQLAlchemy(nomen.NomenApp)
+db = SQLAlchemy()
 
-class PagePart(NomenDB.Model):
+class PagePart(db.Model):
     __tablename__   = 'pages'
     page_id         = Column(Integer, primary_key=True, autoincrement=True)
     page_name       = Column(String(1024))
@@ -40,9 +39,11 @@ class PagePart(NomenDB.Model):
         elif page_type == 'target':
             page_parts = PagePart.query.join(PagePart.target).filter_by(name=name.upper()).all()
         else:
-            pass 
-        
+            pass
 
+        if page_parts == []:
+            return None
+        
         for part in page_parts:
             if part.section == 'TITLE':
                 page.title = part.content
@@ -59,9 +60,7 @@ class PagePart(NomenDB.Model):
 
         return page
 
-
-
-class Feature(NomenDB.Model):
+class Feature(db.Model):
     __tablename__       = 'features'
     feature_id          = Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024), nullable=False)
@@ -84,13 +83,18 @@ class Feature(NomenDB.Model):
     featurereference    = relationship('FeatureReference')
     approvalstatus      = relationship('ApprovalStatus')
     parentfeature       = relationship('Feature', remote_side=feature_id, backref='sub_features')
-    
 
-class Target(NomenDB.Model):
+    def get_one_byname(name):
+        return Feature.query.filter_by(clean_name=name).first()
+
+    def get_one_byid(id):
+        return Feature.query.filter_by(feature_id=id).first()
+   
+class Target(db.Model):
     __tablename__       = 'targets'
     target_id           = Column(Integer, primary_key=True, autoincrement=True)
-    naif_id             = Column(Integer)
-    name                = Column(String(20), nullable=False)
+    naif_id             = Column(String(20))
+    name                = Column(Integer, nullable=False)
     system              = Column(String(20), nullable=False)
     display_name        = Column(String(20))
     a_axis_radius       = Column(DOUBLE_PRECISION)
@@ -105,12 +109,12 @@ class Target(NomenDB.Model):
     controlnets         = relationship('ControlNet', back_populates='target')
 
     def get_all():
-        return Target.query.order_by(Target.display_name)
+        return Target.query.order_by(Target.display_name).all()
 
     def get_approved():
-        return Target.query.join(Feature).order_by(Target.display_name)
+        return Target.query.join(Feature).order_by(Target.display_name).all()
 
-class ApprovalStatus(NomenDB.Model):
+class ApprovalStatus(db.Model):
     __tablename__       = 'approvalstatuses'
     approval_status_id  = Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024))
@@ -119,7 +123,7 @@ class ApprovalStatus(NomenDB.Model):
     def get_all():
         return ApprovalStatus.query.all()
 
-class Continent(NomenDB.Model):
+class Continent(db.Model):
     __tablename__   = 'continents'
     continent_id    = Column(Integer, primary_key=True, autoincrement=True)
     continent_name  = Column(String(1024), nullable=False)
@@ -127,9 +131,12 @@ class Continent(NomenDB.Model):
     ethnicities     = relationship('Ethnicity', back_populates='continent')
 
     def get_all():
-        return Continent.query.order_by(Continent.continent_name)
+        return Continent.query.order_by(Continent.continent_name).all()
+    
+    def get_one(name):
+        return Continent.query.filter_by(continent_name=name).all()
 
-class ControlNet(NomenDB.Model):
+class ControlNet(db.Model):
     __tablename__   = 'controlnets'
     control_net_id  = Column(Integer, primary_key=True, autoincrement=True)
     name            = Column(String(64), nullable=False)
@@ -137,7 +144,7 @@ class ControlNet(NomenDB.Model):
     description     = Column(String(1024))
     target          = relationship('Target', back_populates='controlnets')
 
-class CoordinateSystem(NomenDB.Model):
+class CoordinateSystem(db.Model):
     __tablename__       = 'coordinatesystems'
     coordinate_system_id= Column(Integer, primary_key=True, autoincrement=True)
     name                = Column(String(1024))
@@ -145,7 +152,7 @@ class CoordinateSystem(NomenDB.Model):
     is_positive_east    = Column(Boolean)
     is_0_360            = Column(Boolean)
 
-class FeatureGeometry(NomenDB.Model):
+class FeatureGeometry(db.Model):
     __tablename__       = 'featuregeometries'
     feature_geometry_id = Column(Integer, primary_key=True, autoincrement=True)
     feature_id          = Column(Integer, ForeignKey('features.feature_id'))
@@ -163,7 +170,7 @@ class FeatureGeometry(NomenDB.Model):
     feature             = relationship('Feature', back_populates='featuregeometries')
     controlnet          = relationship('ControlNet')
 
-class Ethnicity(NomenDB.Model):
+class Ethnicity(db.Model):
     __tablename__   = 'ethnicities'
     ethnicity_id    = Column(Integer, primary_key=True, autoincrement=True)
     continent_id    = Column(Integer, ForeignKey('continents.continent_id'), nullable=False)
@@ -172,17 +179,17 @@ class Ethnicity(NomenDB.Model):
     continent       = relationship('Continent', back_populates='ethnicities')
 
     def get_all():
-        return Ethnicity.query.order_by(Ethnicity.ethnicity_name)
+        return Ethnicity.query.order_by(Ethnicity.ethnicity_name).all()
 
-class FeatureReference(NomenDB.Model):
+class FeatureReference(db.Model):
     __tablename__           = 'featurereferences'
     feature_reference_id    = Column(Integer, primary_key=True, autoincrement=True)
     name                    = Column(String(1024), nullable=False)
 
     def get_all():
-        return FeatureReference.query.order_by(FeatureReference.feature_reference_id)
+        return FeatureReference.query.order_by(FeatureReference.feature_reference_id).all()
 
-class FeatureRequest(NomenDB.Model):
+class FeatureRequest(db.Model):
     __tablename__           = 'featurerequests'
     feature_request_id      = Column(Integer, primary_key=True, autoincrement=True)
     requester_name          = Column(String(1024))
@@ -209,7 +216,7 @@ class FeatureRequest(NomenDB.Model):
     featuretype             = relationship('FeatureType')
     target                  = relationship('Target')
 
-class FeatureType(NomenDB.Model):
+class FeatureType(db.Model):
     __tablename__   = 'featuretypes'
     feature_type_id = Column(Integer, primary_key=True, autoincrement=True)
     name            = Column(String(1024), nullable=False)
@@ -217,7 +224,7 @@ class FeatureType(NomenDB.Model):
     description     = Column(String(1024))
 
     def get_all():
-        return FeatureType.query.order_by(FeatureType.name)
+        return FeatureType.query.order_by(FeatureType.name).all()
 
     def get_bytarget(target_name):
         return FeatureType.query.join(Feature)\
@@ -225,7 +232,7 @@ class FeatureType(NomenDB.Model):
                                 .filter_by(name=target_name)\
                                 .order_by(FeatureType.name)
 
-class Quad(NomenDB.Model):
+class Quad(db.Model):
     __tablename__   = 'quads'
     quad_id         = Column(Integer, primary_key=True, autoincrement=True)
     quad_group_id   = Column(Integer)
@@ -234,7 +241,7 @@ class Quad(NomenDB.Model):
     link            = Column(String(1024))
     geometry        = Column(Geometry('GEOMETRY'))
 
-class TargetCoordinate(NomenDB.Model):
+class TargetCoordinate(db.Model):
     __tablename__           = 'targetcoordinates'
     target_coordinate_id    = Column(Integer, primary_key=True, autoincrement=True)
     target_id               = Column(Integer, ForeignKey('targets.target_id'), nullable=False)
@@ -247,4 +254,4 @@ class TargetCoordinate(NomenDB.Model):
 class System():
 
     def get_all():
-        return Target.query.join(Feature).distinct(Target.system)
+        return Target.query.join(Feature).distinct(Target.system).all()
