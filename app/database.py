@@ -1,9 +1,12 @@
-from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
-from geoalchemy2 import Geometry
+from datetime import date
 from flask_sqlalchemy import SQLAlchemy
+from geoalchemy2 import Geometry
+from shapely import wkb, wkt
+from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey, BigInteger, Text
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
 
 db = SQLAlchemy()
 
@@ -82,7 +85,18 @@ class Feature(db.Model):
     target              = relationship('Target')
     featurereference    = relationship('FeatureReference')
     approvalstatus      = relationship('ApprovalStatus')
-    parentfeature       = relationship('Feature', remote_side=feature_id, backref='sub_features')
+    parentfeature       = relationship('Feature', remote_side=feature_id, backref='childfeatures')
+
+    @hybrid_property
+    def clean_approvaldate(self):
+        if self.approval_date is not None:
+            feature_date = self.approval_date.date()
+            if feature_date < date(2006, 9, 13):
+                return feature_date.year
+            else:
+                return feature_date
+
+        return None
 
     def get_one_byname(name):
         return Feature.query.filter_by(clean_name=name).first()
@@ -112,7 +126,10 @@ class Target(db.Model):
         return Target.query.order_by(Target.display_name).all()
 
     def get_approved():
-        return Target.query.join(Feature).order_by(Target.display_name).all()
+        return Target.query.join(Feature)\
+                            .filter_by(approval_status_id=5)\
+                            .order_by(Target.display_name)\
+                            .all()
 
 class ApprovalStatus(db.Model):
     __tablename__       = 'approvalstatuses'
@@ -169,6 +186,22 @@ class FeatureGeometry(db.Model):
     westmostlongitude   = Column(DOUBLE_PRECISION)
     feature             = relationship('Feature', back_populates='featuregeometries')
     controlnet          = relationship('ControlNet')
+
+    @hybrid_property
+    def wkb_center(self):
+        return wkb.loads(bytes(self.center_point.data))
+
+    @hybrid_property
+    def wkb_geometry(self):
+        return wkb.loads(bytes(self.center_point.data))
+
+    @hybrid_property
+    def wkt_center(self):
+        return wkb.loads(bytes(self.center_point.data)).wkt
+
+    @hybrid_property
+    def wkt_geometry(self):
+        return wkb.loads(bytes(self.geometry.data)).wkt
 
 class Ethnicity(db.Model):
     __tablename__   = 'ethnicities'
@@ -232,14 +265,22 @@ class FeatureType(db.Model):
                                 .filter_by(name=target_name)\
                                 .order_by(FeatureType.name)
 
+class QuadGroup(db.Model):
+    __tablename__   = 'quadgroups'
+    quad_group_id   = Column(Integer, primary_key=True, autoincrement=True)
+    name            = Column(String(1024))
+    target_id       = Column(Integer, ForeignKey('targets.target_id'))
+    target          = relationship('Target')
+
 class Quad(db.Model):
     __tablename__   = 'quads'
     quad_id         = Column(Integer, primary_key=True, autoincrement=True)
-    quad_group_id   = Column(Integer)
+    quad_group_id   = Column(Integer, ForeignKey('quadgroups.quad_group_id'))
     name            = Column(String(1024))
     code            = Column(String(20))
     link            = Column(String(1024))
     geometry        = Column(Geometry('GEOMETRY'))
+    quadgroup       = relationship('QuadGroup')           
 
 class TargetCoordinate(db.Model):
     __tablename__           = 'targetcoordinates'
@@ -250,6 +291,45 @@ class TargetCoordinate(db.Model):
     priority                = Column(Integer)
     target                  = relationship('Target', back_populates='targetcoordinates')
     coordinatesystem        = relationship('CoordinateSystem')
+
+class CurrentFeature(db.Model):
+    __tablename__           = 'current_features_view'
+    feature_id              = Column(Integer, primary_key=True, nullable=False)
+    name                    = Column(String(1024))
+    clean_name              = Column(String(1024))
+    legacy_name             = Column(String(1024))
+    ethnicity_id            = Column(Integer)
+    ct_ethnicity            = Column(Text)
+    feature_type_id         = Column(Integer)
+    parent_id               = Column(Integer)
+    target_id               = Column(Integer)
+    feature_reference_id    = Column(Integer)
+    description             = Column(String(1024))
+    approval_status_id      = Column(Integer)
+    approval_date           = Column(DateTime(timezone=False))
+    origin                  = Column(String(1024))
+    feature_updated_on      = Column(DateTime(timezone=False))
+    feature_geometry_id     = Column(Integer, nullable=False)
+    geometry                = Column(Geometry('GEOMETRY'), nullable=False)
+    center_point            = Column(Geometry('GEOMETRY'), nullable=False)
+    northmostlatitude       = Column(DOUBLE_PRECISION)
+    southmostlatitude       = Column(DOUBLE_PRECISION)
+    eastmostlongitude       = Column(DOUBLE_PRECISION)
+    westmostlongitude       = Column(DOUBLE_PRECISION)
+    diameter                = Column(REAL)
+    control_net_id          = Column(Integer)
+    geom_created_on         = Column(DateTime(timezone=False))
+    geom_updated_on         = Column(DateTime(timezone=False))
+    quad_name               = Column(String(1024))
+    quad_code               = Column(String(20))
+    quad_link               = Column(String(1024))
+    active                  = Boolean
+
+    def get_all():
+        return CurrentFeature.query.order_by(clean_name).all()
+
+    def get_one_byid(feature_id):
+        return CurrentFeature.query.filter_by(feature_id=feature_id).first()
 
 class System():
 

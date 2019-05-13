@@ -635,7 +635,7 @@ tr.deprecated td, tr.deprecated td a, span.deprecated {
   display:   none;
 }
 div.astroConsole {
-  background: transparent url(../images/console/console_center.png) repeat-x;
+  background: transparent url(../images/layout/console_center.png) repeat-x;
   height: 101px;
 }
 img.astroConsoleRight {

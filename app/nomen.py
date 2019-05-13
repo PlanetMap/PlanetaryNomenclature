@@ -1,9 +1,13 @@
 from flask import Flask, Blueprint, render_template, request, Response
 from jinja2 import Markup
 from database import (db, PagePart, Feature, Target, ApprovalStatus, Continent,
-	Ethnicity, FeatureReference, FeatureType, System)
+	Ethnicity, FeatureReference, FeatureType, System, FeatureGeometry, CurrentFeature)
+
 
 router = Blueprint('router', __name__, template_folder='templates')
+
+def datetimeformat(value, format='%b %d, %Y %-I:%M %p'):
+	return value.strftime(format)
 
 def create_app(config_mode):
 
@@ -21,11 +25,15 @@ def create_app(config_mode):
 	
 	db.init_app(app)
 	app.register_blueprint(router)
+	app.jinja_env.filters['datetimeformat'] = datetimeformat
 	return app
 
 @router.route('/', methods = ['GET'])
 def home():
-	return render_template('home.html')
+	try:
+		return render_template('home.html')
+	except:
+		abort(404)
 
 @router.route('/Abbreviations', methods = ['GET'])
 def abbreviations():
@@ -51,9 +59,18 @@ def gisdownloads():
 												page_body = Markup(page.body),
 												page_javascript = Markup(page.javascript))
 
-@router.route('/Feature/<int:feature_id>')
+@router.route('/Feature/<int:feature_id>', methods = ['GET'])
 def feature(feature_id):
-	return render_template('page_template.html')
+	feature = Feature.get_one_byid(feature_id)
+	related_content = PagePart.get_page("target", feature.target.name).feature_related
+	current_feature = CurrentFeature.get_one_byid(feature_id) # speed up quad retrievals by getting from current_feature
+	render_map = feature.target.show_map or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 52)\
+										 or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 9)
+	# TODO: generate KML from dominant attributes (MDIM and CS)
+	return render_template('feature_template.html', feature = feature,
+													current_feature = current_feature,
+													related_content = Markup(related_content),
+													render_map = render_map)
 
 @router.route('/FeatureNameRequest', methods = ['GET'])
 def namerequest():
@@ -70,9 +87,7 @@ def references():
 
 @router.route('/nomenclature/SearchResults', methods = ['GET', 'POST'])
 def searchresults():
-	# parse the search arguments
-	# do the search queries
-	# render the page
+	# by default, returns all current features (prod currently returning 15797 features?)
 	return render_template('searchresults.html', page_start = 0,
 												result_count = 5,
 												results_perpage = 20,
