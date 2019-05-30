@@ -133,11 +133,11 @@
         </tr>
         <tr class="geom {{ feature_geometry.feature_geometry_id }}">
           <th>Center Latitude</th>
-          <td>{{ "{0:0.2f}".format(feature_geometry.wkb_center.y) }}  &deg;</td>
+          <td>{{ "{0:0.2f}".format(feature_geometry.center_shape.y) }}  &deg;</td>
         </tr>
         <tr class="geom {{ feature_geometry.feature_geometry_id }}">
           <th>Center Longitude</th>
-          <td>{{ "{0:0.2f}".format(feature_geometry.wkb_center.x) }} &deg;</td>
+          <td>{{ "{0:0.2f}".format(feature_geometry.center_shape.x) }} &deg;</td>
         </tr>
       {% endfor %}
        
@@ -386,8 +386,8 @@
       {% for feature_geometry in feature.featuregeometries %}
         {% if feature_geometry.controlnet %}
           if ($('#selected_control_net').val() === '{{ feature_geometry.feature_geometry_id|tojson }}') {
-            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.wkt_center }}', null, 'purple', 'footprint', true, false);
-            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.wkt_geometry }}', null, 'green', 'footprint', true, false);
+            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.center_wkt }}', null, 'purple', 'footprint', true, false);
+            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.geometry_wkt }}', null, 'green', 'footprint', true, false);
           }
         {% endif %}
       {% endfor %}

@@ -47,9 +47,12 @@
                 <td class="layout" id="layout_glass_top_left"  ><div class="content_spacer"></div></td> <!-- Need to use a div, because IE wont do min-width for a td -->
                 <td class="layout" id="layout_glass_top_center">
                   <div class="search_wrapper">
-                    <form beanclass="nomenclature.action.SearchResultsActionBean" id="simple_search" name="simple_search">
+                    <form action="/SearchResults" method="post" id="simple_search" name="simple_search" novalidate>
                       <div class="simple_search_wrapper" title="Search for Features">
-                        <input type="text" name="feature" size="17" id="simple_search_box"  class="search_box_empty" ALT="search for a feature by name"/><img src="{{ url_for('static', filename='images/layout/search_button.png') }}" id="search_button" onClick=" document.simple_search.submit();" alt="search"/>
+                        {{ simple_search.hidden_tag() }} <!-- generates a submission token -->
+                        {{ simple_search.feature_name(size=17) }}
+                        {{ simple_search.simple_submit() }}
+                        <!--<img src="{{ url_for('static', filename='images/layout/search_button.png') }}" id="search_button" alt="search"/>-->
                       </div>
                     </form>
                   </div>

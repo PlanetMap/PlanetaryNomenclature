@@ -1,6 +1,6 @@
 flask
 flask-sqlalchemy
-shapely
+flask-wtf
 geoalchemy2
 pytest
 selenium

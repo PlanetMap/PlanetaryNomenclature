@@ -1,7 +1,17 @@
+from flask_wtf import FlaskForm
 from wtforms import Form, SelectField, SubmitField, BooleanField, StringField
 from database import System, Continent, FeatureReference, Target, FeatureType
 
-class AdvancedSearchForm(Form):
+
+# submitting this form should have same results as submitting the
+# AdvancedSearchForm with just feature_name content entered
+class SimpleSearchForm(FlaskForm):
+    feature_name    = StringField(id='simple_search_box', render_kw={"alt": "search for a feature by name",
+                                                                     "placeholder": "Search by Feature Name..."})
+    simple_submit         = SubmitField('Go', id="search_button", render_kw={"alt": "search"})
+
+"""
+class AdvancedSearchForm(FlaskForm):
     system = SelectField(u'System:', choices = System.get_all())
     target = SelectField(u'Target:', choices = Target.get_approved())
     is_positive_east = SelectField(label = None, choices = [('true', '+East'),
@@ -57,5 +67,4 @@ class AdvancedSearchForm(Form):
                                                             ('false', 'Descending')]
     output = SelectField(u'OutputFormat:', choices = )
     submit =  SubmitField()
-
-class NameRequestForm(Form):
+"""

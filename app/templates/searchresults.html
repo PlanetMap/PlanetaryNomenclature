@@ -10,110 +10,6 @@
 
 {% block body %}
 
-  <script type="text/javascript">
-
-    <c:if test="${actionBean.target != null}">
-      var featureSystem="${actionBean.targetsSystem}";
-      var featureTarget="${actionBean.target}";
-    </c:if>
-    
-    
-    $(document).ready(function(){
-      
-      //$(".search_results > tbody > tr:even").addClass("row_even"); // make every other row have style
-      //$(".search_results > tbody > tr:last").addClass("last_row");
-      
-      $('#add_columns').each(function () {
-          // options
-          var distance  =   20; // px
-          var time      =  250; // ms
-          var hideDelay =  750; // ms
-
-          var hideDelayTimer = null;
-
-          // tracker
-          var beingShown = false;
-          var shown      = false;
-
-          var trigger = $('#add_columns');
-          var popup   = $('#popup');
-
-          // set the mouseover and mouseout on both element
-          $([trigger.get(0), popup.get(0)]).mouseover(function () {
-            // stops the hide event if we move from the trigger to the popup element
-            if (hideDelayTimer) clearTimeout(hideDelayTimer);
-
-            // don't trigger the animation again if we're being shown, or already visible
-            if (beingShown || shown) {
-              return;
-            } else {
-              beingShown = true;
-
-              // reset position of popup box
-              popup.css({
-                // top: -100,
-                // left: 0,
-                display: 'block' // brings the popup back in to view
-              })
-
-              // (we're using chaining on the popup) now animate it's opacity and position
-              .animate({
-                top: '+=' + distance + 'px',
-                opacity: 1
-              }, time, 'swing', function() {
-                // once the animation is complete, set the tracker variables
-                beingShown = false;
-                shown = true;
-              });
-            }
-          }).mouseout(function () {
-            // reset the timer if we get fired again - avoids double animations
-            if (hideDelayTimer) clearTimeout(hideDelayTimer);
-
-            // store the timer so that it can be cleared in the mouseover if required
-            hideDelayTimer = setTimeout(function () {
-              hideDelayTimer = null;
-              popup.animate({
-                top: '-=' + distance + 'px',
-                opacity: 0
-              }, time, 'swing', function () {
-                // once the animate is complete, set the tracker variables
-                shown = false;
-                // hide the popup entirely after the effect (opacity alone doesn't do the job)
-                popup.css('display', 'none');
-              });
-            }, hideDelay);
-          });
-        });
-                
-      // when the dom is ready, hide and show the right columns
-        $('#popup input').each(function() {
-          var check_box = $(this);
-          if(!check_box.is(':checked')) {  // all you need to do is hide the ones not checked
-            $('.' +check_box.attr('name')).hide();
-          }
-        });
-      
-      // When someone changes the check box, show or hide the right row
-      $('#popup input').click(function() { 
-        var check_box = $(this);
-        // console.log(check_box.attr('name'));
-        if(check_box.is(':checked')) {
-          $('.' +check_box.attr('name')).show();
-        } else {
-          $('.' +check_box.attr('name')).hide();
-        }
-      });
-      
-      // if someone changes the 'per page' reset to the first page and run the search again
-      $('#resultsPerPage').change(function() {
-        $('#pageStart').val(0);
-        $('#form').submit();
-      })
-
-    });
-  </script>
-
   <h3>Nomenclature Search Results</h3>
   <div id="criteria"><!-- include criterian.jsp --></div>
 
@@ -143,24 +39,16 @@
     <input type="hidden" name="displayType"        id="displayType"         value="HTML"                            />
       
     <input id="pageStart" name="pageStart" value="${actionBean.prevPageStart}" type="hidden" />
-    <p>Go back and <a onClick="$('#form').attr('action','/nomenclature/AdvancedSearch'); 
+    <p>Go back and <a onClick="$('#form').attr('action','/AdvancedSearch'); 
                                 $('#displayType').val('HTML'); $('#form').submit();" 
                       class="js_action">Refine your Search
                    </a>.
     </p>
 
-    {% if planetographic %}<p><em>All search result latitudes are planetographic</em></p>{% endif %}
-    {% if not planetographic %}<p><em>All search result latitudes are planetocentric</em></p>{% endif %}
-    <!--<c:if test="${actionBean.is_planetographic}"></c:if>
-    <c:if test="${actionBean.is_planetographic != true}"></c:if>-->
+    {% if planetographic %}<p><em>All search result latitudes are planetographic</em></p>
+    {% else %}<p><em>All search result latitudes are planetocentric</em></p>{% endif %}
 
-   <!--<c:choose>
-     <c:when test="${actionBean.results != null && not empty actionBean.results}">-->
-      
-      <div class="searchresults_instructions">
-        To show and hide columns, move your mouse over the leftmost column heading with a '+'. 
-      </div>
-      
+    {% if results %}
       
       <!--<span class="h3">Your search results (${actionBean.pageStart + 1} - -->
       <span class="h3">Your search results ({{page_start + 1}} - 
@@ -181,46 +69,53 @@
         </c:if>
       </span>-->
       
-      <!-- include searchPaging.jsp -->
+      <div class="next_prev_buttons">
+        <c:if test="${actionBean.showPrev}">
+            <s:submit name="displayResults" value="Prev Page" onclick="$('#pageStart').val(${actionBean.prevPageStart}); $('#displayType').val('HTML'); submit();"/>
+        </c:if>
+
+        <c:if test="${actionBean.showNext}">
+            <s:submit name="displayResults" value="Next Page"  onclick="$('#pageStart').val(${actionBean.nextPageStart}); $('#displayType').val('HTML'); submit();"/>
+        </c:if>
+      </div>
       
       <span class="h3" style="margin-left: 50px">Per Page:</span>
       <select name="resultsPerPage" id="resultsPerPage">
-        <option value="25" >25</option>
-        <option value="50" >50</option>
-        <option value="100">100</option>
-        <option value="200">200</option>
-        <option value="500">500</option>
+        <option value="25"          >25</option>
+        <option value="50" selected >50</option>
+        <option value="100"         >100</option>
+        <option value="200"         >200</option>
+        <option value="500"         >500</option>
       </select>
-      
-      <div id="popup">
-        <h3>Add/Remove Columns:</h3>
-        <ul>
-          <li><input type="checkbox" name="featureIDColumn"        />Feature ID         </li>
-          <li><input type="checkbox" name="featureNameColumn"      />Feature Name       </li>
-          <li><input type="checkbox" name="cleanFeatureNameColumn" />Clean Feature Name </li>
-          <li><input type="checkbox" name="targetColumn"           />Target             </li>
-          <li><input type="checkbox" name="diameterColumn"         />Diameter           </li>
-          <li><input type="checkbox" name="centerLatLonColumn"     />Center Lat/Lon     </li>
-          <li><input type="checkbox" name="latLonColumn"           />Lat/Lon Boundaries </li>
-          <li><input type="checkbox" name="coordSystemColumn"      />Coordinate System  </li>
-          <li><input type="checkbox" name="contEthColumn"          />Continent/Ethnicity</li>
-          <li><input type="checkbox" name="featureTypeColumn"      />Feature Type       </li>
-          <li><input type="checkbox" name="featureTypeCodeColumn"  />Feature Type Code  </li>
-          <li><input type="checkbox" name="quadColumn"             />Quad               </li>
-          <li><input type="checkbox" name="approvalStatusColumn"   />Approval Status    </li>
-          <li><input type="checkbox" name="approvalDateColumn"     />Approval Date      </li>
-          <li><input type="checkbox" name="referenceColumn"        />Reference          </li>
-          <li><input type="checkbox" name="originColumn"           />Origin             </li>
-          <li><input type="checkbox" name="additionalInfoColumn"   />Additional Info    </li>
-          <li><input type="checkbox" name="lastUpdatedColumn"      />Last Updated       </li>
-        </ul>
+
+      <div id="add_columns"> + Add/Remove Columns
+        <div id="popup">
+          <ul>
+            <li><input type="checkbox" name="featureIDColumn"                />Feature ID         </li>
+            <li><input type="checkbox" name="featureNameColumn"      checked />Feature Name       </li>
+            <li><input type="checkbox" name="cleanFeatureNameColumn"         />Clean Feature Name </li>
+            <li><input type="checkbox" name="targetColumn"           checked />Target             </li>
+            <li><input type="checkbox" name="diameterColumn"         checked />Diameter           </li>
+            <li><input type="checkbox" name="centerLatLonColumn"     checked />Center Lat/Lon     </li>
+            <li><input type="checkbox" name="latLonColumn"                   />Lat/Lon Boundaries </li>
+            <li><input type="checkbox" name="coordSystemColumn"      checked />Coordinate System  </li>
+            <li><input type="checkbox" name="contEthColumn"                  />Continent/Ethnicity</li>
+            <li><input type="checkbox" name="featureTypeColumn"              />Feature Type       </li>
+            <li><input type="checkbox" name="featureTypeCodeColumn"          />Feature Type Code  </li>
+            <li><input type="checkbox" name="quadColumn"                     />Quad               </li>
+            <li><input type="checkbox" name="approvalStatusColumn"   checked />Approval Status    </li>
+            <li><input type="checkbox" name="approvalDateColumn"     checked />Approval Date      </li>
+            <li><input type="checkbox" name="referenceColumn"                />Reference          </li>
+            <li><input type="checkbox" name="originColumn"           checked />Origin             </li>
+            <li><input type="checkbox" name="additionalInfoColumn"           />Additional Info    </li>
+            <li><input type="checkbox" name="lastUpdatedColumn"              />Last Updated       </li>
+          </ul>
+        </div>
       </div>
-      
-      <!--<table class="search_results">-->
-      <table class="tablesorter tablesorter-default">
+           
+      <table class="tablesorter tablesorter-default search_results">
         <thead>
-          <tr class="tablesorter-headerRow">
-            <th id="add_columns"> + </th>
+          <tr class="tablesorter-headerRow row_header">
             <th class="featureIDColumn tablesorter-header"          >Feature ID            </th>
             <th class="featureNameColumn tablesorter-header"        >Feature Name          </th>
             <th class="cleanFeatureNameColumn tablesorter-header"   >Clean Feature Name    </th>
@@ -230,8 +125,8 @@
             <th class="centerLatLonColumn tablesorter-header"       >Center Longitude      </th>
             <th class="latLonColumn tablesorter-header"             >Northernmost Latitude </th>
             <th class="latLonColumn tablesorter-header"             >Southernmost Latitude </th>
-            <th class="latLonColumn tablesorter-header"             >Easternmost Latitude  </th>
-            <th class="latLonColumn tablesorter-header"             >Westernmost Latitude  </th>
+            <th class="latLonColumn tablesorter-header"             >Easternmost Longitude </th>
+            <th class="latLonColumn tablesorter-header"             >Westernmost Longitude </th>
             <th class="coordSystemColumn tablesorter-header"        >Coordinate System     </th>
             <th class="contEthColumn tablesorter-header"            >Continent Ethnicity   </th>
             <th class="featureTypeColumn tablesorter-header"        >Feature Type          </th>
@@ -246,156 +141,129 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="hover-highlight">
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            <td>test</td>
-            </tr> 
-          <!-- for each feature, make a row         
-          <c:forEach items="${actionBean.results}" var="feature">
-            <tr  <c:if test="${feature.approvalStatus.approval_status_id == 7 || feature.approvalStatus.approval_status_id == 6}">class="deprecated"</c:if> >
-              <td></td>
-              <td class="featureIDColumn">${feature.feature_id}</td>
-              <td class="nobr featureNameColumn">
-                <c:choose>
-                 <c:when test="${feature.approvalStatus.approval_status_id == 7 || feature.approvalStatus.approval_status_id == 6}">
-                   <s:link beanclass="nomenclature.action.FeatureActionBean">
-                     <s:param name="param" value="${feature.feature_id}"/>
-                     [<c:out value="${feature.name}"/>]
-                   </s:link>
-                 </c:when>
-                  <c:otherwise>
-                    <s:link beanclass="nomenclature.action.FeatureActionBean">
-                      <s:param name="param" value="${feature.feature_id}"/>
-                      <c:out value="${feature.name}"/>
-                    </s:link>
-                  </c:otherwise>
-                </c:choose>
-              </td>
-              <td class="cleanFeatureNameColumn"><c:out value="${feature.clean_name}"/></td>
-              <td class="targetColumn"><c:out value="${feature.target.display_name}"/></td>
-              <td class="diameterColumn right"><s:format     value="${feature.diameter}"                           formatPattern="#.##"/></td>
-              <td class="centerLatLonColumn right"><s:format value="${feature.convertableGeom.center_latitude}"    formatPattern="#.##"/></td>
-              <td class="centerLatLonColumn right"><s:format value="${feature.convertableGeom.center_longitude}"   formatPattern="#.##"/></td>
-              <td class="latLonColumn right">
-                <c:choose>
-                  <c:when test="${feature.convertableGeom.northmostlatitude != null}">
-                    <s:format       value="${feature.convertableGeom.northmostlatitude}"  formatPattern="#.##"/>
-                  </c:when>
-                  <c:otherwise>-</c:otherwise>
-                </c:choose>
-              </td>
-              <td class="latLonColumn right">
-                <c:choose>
-                  <c:when test="${feature.convertableGeom.southmostlatitude != null}">
-                    <s:format       value="${feature.convertableGeom.southmostlatitude}"    formatPattern="#.##"/>
-                  </c:when>
-                  <c:otherwise>-</c:otherwise>
-                </c:choose>
-              </td>
-              <td class="latLonColumn right">
-                <c:choose>
-                  <c:when test="${feature.convertableGeom.eastmostlongitude != null}">
-                    <s:format       value="${feature.convertableGeom.eastmostlongitude}" formatPattern="#.##"/>
-                  </c:when>
-                  <c:otherwise>-</c:otherwise>
-                </c:choose>
-              </td>
-              <td class="latLonColumn right">
-                <c:choose>
-                  <c:when test="${feature.convertableGeom.westmostlongitude != null}">
-                    <s:format       value="${feature.convertableGeom.westmostlongitude}"   formatPattern="#.##"/>
-                  </c:when>
-                  <c:otherwise>-</c:otherwise>
-                </c:choose>
-              </td>
-              <td class="coordSystemColumn center" title="<c:out value="${feature.convertableGeom.coordinateSystem.name}"/>">
-                <c:choose>
-                  <c:when test="${feature.convertableGeom.coordinateSystem.is_positive_east}">
-                    +E
-                  </c:when>
-                  <c:otherwise>
-                    +W
-                  </c:otherwise>
-                </c:choose>
-                
-                <c:choose>
-                  <c:when test="${feature.convertableGeom.coordinateSystem.is_0_360}">
-                    (0-360)
-                  </c:when>
-                  <c:otherwise>
-                    (0-180)
-                  </c:otherwise>
-                </c:choose>
-              </td>
-              <td class="contEthColumn center" title="<c:out value="${feature.ethnicity.continent.continent_name} - ${feature.ethnicity.ethnicity_name}"/>">
-                <c:out value="${feature.ethnicity.prittyName}"/>
-              </td>
-              <td><c:out value="${feature.feature.description}"/></td>
-              <td class="featureTypeColumn right"><c:out value="${feature.featureType.name}"/></td>
-              <td class="featureTypeCodeColumn right" title="<c:out value="${feature.featureType.name}"/>"><c:out value="${feature.featureType.code}"/></td>
-              <td class="quadColumn right" title="${feature.quad_name}">
-                <c:choose>
-                  <c:when test="${feature.quad_code == null}">
-                    -
-                  </c:when>
-                  <c:when test="${feature.quad_link == null}">
-                     <c:out value="${feature.quad_code}"/>
-                  </c:when>
-                  <c:otherwise>
-                     <a href="${feature.quad_link}" target="_new"><c:out value="${feature.quad_code}"/></a>
-                  </c:otherwise>
-                </c:choose>
-              </td>
-              <td class="approvalStatusColumn right"><span title="<c:out value="${feature.approvalStatus.name}"/>"><c:out value="${feature.approvalStatus.short_name}"/></span></td>
-              <td class="approvalDateColumn nobr right">
-                <c:choose>
-                  <c:when test="${feature.approval_date == null}">
-                    -
-                  </c:when>
-                  <c:when test="${feature.onlyShowYear}">
-                    <fmt:formatDate value="${feature.approval_date}" pattern="yyyy"/>
-                  </c:when>
-                  <c:otherwise>
-                    <fmt:formatDate value="${feature.approval_date}" dateStyle="default"/>
-                  </c:otherwise>
-                </c:choose>
-              </td>
-              <td class="referenceColumn right">
-                <c:if test="${feature.featureReference != null}">
-                  <span title="<c:out value="${feature.feature.featureReference.name}"/>">
-                    [<c:out value="${feature.featureReference.feature_reference_id}"/>]
-                  </span>
-                </c:if>
-                <c:if test="${feature.featureReference == null}">
-                  <span title="none">-</span>
-                </c:if>
-              </td>
-              <td class="originColumn"><c:out value="${feature.origin}"/></td>
-              <td class="additionalInfoColumn"><c:out value="${feature.description}"/></td>
-              <td class="lastUpdatedColumn right"><fmt:formatDate value="${feature.feature_updated_on}" dateStyle="medium"/></td>
-            </tr>
-          </c:forEach>-->
+          {% for feature in results %}
+          <tr class="hover-highlight {% if feature.approval_status_id in [6,7] %} deprecated {% endif %}">
+
+            <td class="featureIDColumn right">{{ feature.feature_id }}</td>
+
+            <td class="featureNameColumn">
+              <a href="/Feature/{{ feature.feature_id }}">
+              {% if feature.approval_status_id in [6,7] %} 
+                [{{ feature.name }}] 
+              {% else %} 
+                {{ feature.name }} 
+              {% endif %}
+              </a>
+            </td>
+
+            <td class="cleanFeatureNameColumn">{{ feature.clean_name }}</td>
+
+            <td class="targetColumn">{{ feature.target.display_name }}</td>
+
+            <td class="diameterColumn right">{{ feature.diameter|floatformat }}</td>
+
+            <td class="centerLatLonColumn right">{{ feature.center_shape.y|floatformat }}</td>
+
+            <td class="centerLatLonColumn right">{{ feature.center_shape.x|floatformat }}</td>
+            
+            <td class="latLonColumn right"> 
+              {% if feature.northmostlatitude %} 
+                {{ feature.northmostlatitude|floatformat }} 
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            
+            <td class="latLonColumn right"> 
+              {% if feature.southmostlatitude %} 
+                {{ feature.southmostlatitude|floatformat }} 
+              {% else %}
+                -
+              {% endif %}
+            </td>
+
+            <td class="latLonColumn right"> 
+              {% if feature.eastmostlongitude %} 
+                {{ feature.eastmostlongitude|floatformat }} 
+              {% else %}
+                -
+              {% endif %}
+            </td>
+
+            <td class="latLonColumn right"> 
+              {% if feature.westmostlongitude %} 
+                {{ feature.westmostlongitude|floatformat }} 
+              {% else %}
+                -
+              {% endif %}
+            </td>        
+
+            <td class="coordSystemColumn center"> 
+              {% if feature.target.targetcoordinates[0].coordinatesystem.is_positive_east %}
+                +E
+              {% else %}
+                +W
+              {% endif %}
+
+              {% if feature.target.targetcoordinates[0].coordinatesystem.is_0_360 %}
+                (0-360)
+              {% else %}
+                (0-180)
+              {% endif %}
+            </td>
+            
+            <td class="contEthColumn center"> 
+              {{ feature.ethnicity.ethnicity_name }}
+            </td>            
+            
+            <td class="featureTypeColumn right"> {{ feature.featuretype.name }}</td>
+            
+            <td class="featureTypeCodeColumn right"> {{ feature.featuretype.code }}</td>
+                       
+            <td class="quadColumn right">
+              {% if not feature.quad_code %}
+                -
+              {% elif not feature.quad_link %}
+                {{ feature.quad_code }}
+              {% else %}
+                <a href="{{ feature.quad_link }}" target="_new">{{ feature.quad_code }}</a>
+              {% endif %}
+            </td>
+            
+            <td class="approvalStatusColumn right">
+              <span title="{{ feature.approvalstatus.name }}">{{ feature.approvalstatus.short_name }}</span>
+            </td>
+
+            <td class="approvalDateColumn nobr right" data-sort="{{ feature.approval_date }}"> 
+              {% if not feature.approval_date %}
+                -
+              {% elif feature.show_year %}
+                {{ feature.approval_date|yearformat }}
+              {% else %}
+                {{ feature.approval_date|dateformat }}
+              {% endif %}
+            </td>
+
+            <td class="referenceColumn right">
+              {% if feature.featurereference %}
+                <span title="{{ feature.featurereference.name }}">
+                  [{{ feature.featurereference.feature_reference_id }}]
+                </span>
+              {% else %}
+                <span title="none">-</span>
+              {% endif %}
+            </td>
+            
+            <td class="originColumn">{{ feature.origin }}</td>
+
+            <td class="additionalInfoColumn">{{ feature.description }}</td>
+
+            <td class="lastUpdatedColumn right" data-sort="{{ feature.feature_updated_on }}">
+              {{ feature.feature_updated_on|dateformat }}
+            </td>
+
+          </tr>
+          {% endfor %}
         </tbody>
       </table>
 
@@ -415,12 +283,145 @@
         </ul>
         <p>Note - to select which columns are included in your download, use the <a href="AdvancedSearch">Advanced Search</a>.
       </div>
-      
-     <!--</c:when>
-     <c:otherwise>
+    
+    {% else %}
        Your search returned no results.
-     </c:otherwise>
-     </c:choose>-->
+    {% endif %}
    </form>
+
+<script type="text/javascript">
+
+  {% if false %}
+    var featureSystem="test";
+    var featureTarget="test";
+  {% endif %}
+  
+  
+  $(document).ready(function(){
+
+    $(".search_results").tablesorter({
+
+      textExtraction: function(node) {
+        var attr = $(node).attr('data-sort');
+        if (typeof attr !== undefined) {
+          return attr;
+        }
+
+        return $(node).text();
+      },
+      headers: {
+        '#add_columns': {
+          sorter: false
+        }
+      },
+      sortList: []
+      
+    });
+
+    $(".search_results").on("sortEnd", function(e, table) {
+      highlightRows();
+    })
+
+    //if someone changes the 'per page' reset to the first page and run the search again
+    $('#resultsPerPage').change(function() {
+      $('#pageStart').val(0);
+      $('#form').submit();
+    });
+
+      
+    $('#add_columns').each(function () {
+      // options
+      
+      var time      =  250; // ms
+      var hideDelay =  750; // ms
+
+      var hideDelayTimer = null;
+
+      // tracker
+      var beingShown = false;
+      var shown      = false;
+
+      var trigger = $('#add_columns');
+      var popup   = $('#popup');
+
+      // set the mouseover and mouseout on both element
+      $([trigger.get(0), popup.get(0)]).on('mouseover', function () {
+        // stops the hide event if we move from the trigger to the popup element
+        if (hideDelayTimer) clearTimeout(hideDelayTimer);
+
+        // don't trigger the animation again if we're being shown, or already visible
+        if (beingShown || shown) {
+          return;
+        } else {
+          beingShown = true;
+
+          // reset position of popup box
+          popup.css({
+            display: 'block' // brings the popup back in to view
+          })
+
+          // (we're using chaining on the popup) now animate it's opacity and position
+          .animate({
+            //top: '+=' + distance + 'px',
+            opacity: 1
+          }, time, 'swing', function() {
+            // once the animation is complete, set the tracker variables
+            beingShown = false;
+            shown = true;
+          });
+        }
+      }).on('mouseout', function () {
+        // reset the timer if we get fired again - avoids double animations
+        if (hideDelayTimer) clearTimeout(hideDelayTimer);
+
+        // store the timer so that it can be cleared in the mouseover if required
+        hideDelayTimer = setTimeout(function () {
+          hideDelayTimer = null;
+          popup.animate({
+            //top: '-=' + distance + 'px',
+            opacity: 0
+          }, time, 'swing', function () {
+            // once the animate is complete, set the tracker variables
+            shown = false;
+            // hide the popup entirely after the effect (opacity alone doesn't do the job)
+            popup.css('display', 'none');
+          });
+        }, hideDelay);
+      });
+    });
+ 
+    // when the dom is ready, hide and show the right columns
+    $('#popup input').each(function() {
+      var check_box = $(this);
+      if(!check_box.is(':checked')) {  // all you need to do is hide the ones not checked
+        $('.' +check_box.attr('name')).hide();
+      }
+    });
+  
+    // When someone changes the check box, show or hide the right row
+    $('#popup input').click(function() { 
+      var check_box = $(this);
+      if(check_box.is(':checked')) {
+        $('.' +check_box.attr('name')).show();
+      } else {
+        $('.' +check_box.attr('name')).hide();
+      }
+    });
+
+    highlightRows();
+
+  });
+
+  function highlightRows() {
+
+    // remove current highlighting, where it exists
+    $(".search_results > tbody > tr").removeClass("row_odd");
+    $(".search_results > tbody > tr").removeClass("last_row");
+
+    $(".search_results > tbody > tr:odd").addClass("row_odd"); // highlight every other row
+    $(".search_results > tbody > tr:last").addClass("last_row");
+  }
+
+</script>
 
 {% endblock %}
