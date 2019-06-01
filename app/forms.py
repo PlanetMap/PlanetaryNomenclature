@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import Form, SelectField, SubmitField, BooleanField, StringField
+from wtforms import Form, SelectField, SubmitField, BooleanField, StringField, HiddenField
 from database import System, Continent, FeatureReference, Target, FeatureType
 
 
@@ -8,7 +8,11 @@ from database import System, Continent, FeatureReference, Target, FeatureType
 class SimpleSearchForm(FlaskForm):
     feature_name    = StringField(id='simple_search_box', render_kw={"alt": "search for a feature by name",
                                                                      "placeholder": "Search by Feature Name..."})
-    simple_submit         = SubmitField('Go', id="search_button", render_kw={"alt": "search"})
+    simple_submit   = SubmitField('Go', id="search_button", render_kw={"alt": "search"})
+
+class PagingForm(FlaskForm):
+    prev_submit     = SubmitField('Previous Page', id="prev_button")
+    next_submit     = SubmitField('Next Page', id="next_button")
 
 """
 class AdvancedSearchForm(FlaskForm):

@@ -344,6 +344,12 @@ class CurrentFeature(db.Model):
         return CurrentFeature.query.filter(CurrentFeature.name.ilike(name_string))\
                                     .order_by(CurrentFeature.name).all()
 
+    def get_all_likename_paginated(name, page_number, page_results, error_flag):
+        name_string = '{0}{1}{0}'.format('%', name)
+        return CurrentFeature.query.filter(CurrentFeature.name.ilike(name_string))\
+                                    .order_by(CurrentFeature.name)\
+                                    .paginate(page_number, page_results, False)
+
     def get_one_byname(name):
         return CurrentFeature.query.filter_by(name=name).first()
 

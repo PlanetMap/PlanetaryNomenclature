@@ -1,8 +1,8 @@
-from flask import Flask, Blueprint, render_template, request, Response, redirect
+from flask import Flask, Blueprint, render_template, request, Response, redirect, jsonify
 from jinja2 import Markup
 from database import (db, PagePart, Feature, Target, ApprovalStatus, Continent,
 	Ethnicity, FeatureReference, FeatureType, System, FeatureGeometry, CurrentFeature)
-from forms import SimpleSearchForm
+from forms import SimpleSearchForm, PagingForm
 
 router = Blueprint('router', __name__, template_folder='templates')
 
@@ -120,8 +120,19 @@ def references():
 
 @router.route('/SearchResults', methods = ['GET', 'POST'])
 def searchresults():
-	
-	results = CurrentFeature.get_all_likename(request.form.get('feature_name'))
+	default_cs = 'planetocentric'
+	criteria = {}
+	results = []
+
+	if request.method == 'POST':
+		# if a simple search
+		if 'simple_submit' in request.form:
+			#criteria['feature_name'] = request.form.get('feature_name')
+			results = CurrentFeature.get_all_likename(request.form.get('feature_name'))
+
+		# if an advanced search
+		if 'advanced_submit' in request.form:
+			results = CurrentFeature.get_all_likename(request.form.get('feature_name'))
 	
 	# if exactly one result, redirect to feature page	
 	if len(results) == 1:
@@ -130,12 +141,31 @@ def searchresults():
 
 	# otherwise, load search results
 	else:
-		return render_template('searchresults.html', page_start = 0,
-											results = results,
-											result_count = len(results),
-											results_perpage = 50,
-											planetographic = False,
-											simple_search = SimpleSearchForm())
+		return render_template('searchresults.html',default_cs = default_cs,
+													criteria = criteria,
+													results = results,
+													simple_search = SimpleSearchForm())
+
+													
+@router.route('/SearchResults/Next Page', endpoint='next', methods = ['POST'])
+@router.route('/SearchResults/Previous Page', endpoint='prev', methods = ['POST'])
+def paginated_results():
+	criterion = request.form.get('feature_name')
+	current_page = int(request.form.get('current_page'))
+	page_results = int(request.form.get('page_results'))
+	paginated_results = None
+
+	if request.endpoint == 'router.next':
+		current_page = current_page + 1
+
+	if request.endpoint == 'router.prev':
+		current_page = current_page - 1	
+
+		
+	paginated_results = CurrentFeature.get_all_likename_paginated(criterion, current_page, page_results, False) 
+	return render_template('resultstable.html', paginated_results = paginated_results)
+
+
 
 @router.route('/TargetCoordinates', methods = ['GET'])
 def targetcoordinates():

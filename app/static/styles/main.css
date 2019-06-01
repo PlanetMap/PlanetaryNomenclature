@@ -513,30 +513,6 @@ table.search_results td {
   border-right: 1px solid #ccc;
 }
 
-table.search_results > tbody > tr:hover {
-  background-color: #C5D8E0;
-}
-
-/*
-table.search_results tbody tr td {
-  border-right: 1px solid #ccc;
-}
-
-table.search_results tbody tr.row_header th {
-  border-right: 1px solid #ccc;
-}
-
-table.search_results {
-
-}
-
-table.search_results tbody tr.row_header th:first-child {
-  border-left: 1px solid #ccc;
-}*/
-
-.row_odd {
-  background-color: #E3ECEE;
-}
 .row_header th {
   background-color: #586366;
   color: white;
@@ -596,23 +572,13 @@ div.decending:hover, div.asending:hover {
   cursor: pointer;
 }
 
-div.bottom_next_prev {
-/*  float: right;*/
-}
 table.advanced_search tbody tr td {
   padding: 2px;
 }
 td.align_top {
   vertical-align: top;
 }
-form.next_prev {
-  display: inline;
-}
 
-div.next_prev_buttons {
-  width: 400px;
-  display:inline ;
-}
 table.add_padding tbody tr td {
   padding: 5px;
 }
@@ -635,13 +601,12 @@ tr.deprecated td, tr.deprecated td a, span.deprecated {
   border: 1px solid #ccc;
   text-align: left;
   top: 0;
-  left: -180px;
+  left: 220px;
   width: 160px;
   color: #000;
-
 }
-
 #add_columns {
+  display: inline-block;
   position: relative;
   width: 200px;
   margin-top: 20px; 
@@ -650,6 +615,28 @@ tr.deprecated td, tr.deprecated td a, span.deprecated {
   cursor: pointer;
   font-weight: bold;
   text-align: center;
+  margin-left: 50px;
+}
+
+.pager .pagedisplay {
+  margin: 0 15px;
+}
+
+.pager button {
+  background-color: #C5D8E0;
+  border: none;
+  cursor: pointer;
+  padding: 3px 15px;  
+}
+
+.pager button.disabled,
+.pager button.disabled:hover {
+  cursor: default;
+  background-color: #DCDCDC;
+}
+
+.pager button:hover {
+  background-color: #8a979d;
 }
 
 #add_columns:hover, 
