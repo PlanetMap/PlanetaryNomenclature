@@ -5,6 +5,7 @@
   <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/tablesorter.default.min.css') }}" />
   <script src="{{ url_for('static', filename='js/jquery.tablesorter.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/jquery.tablesorter.pager.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/widget-output.js') }}"></script>
 {% endblock %}
 
 {% block title %}Search Results{% endblock %}
@@ -118,11 +119,11 @@
 
             <td class="targetColumn hidden">{{ feature.target.display_name }}</td>
 
-            <td class="diameterColumn hidden">{{ feature.diameter|floatformat }}</td>
+            <td class="diameterColumn right hidden">{{ feature.diameter|floatformat }}</td>
 
-            <td class="centerLatLonColumn hidden">{{ feature.center_shape.y|floatformat }}</td>
+            <td class="centerLatLonColumn right hidden">{{ feature.center_shape.y|floatformat }}</td>
 
-            <td class="centerLatLonColumn hidden">{{ feature.center_shape.x|floatformat }}</td>
+            <td class="centerLatLonColumn right hidden">{{ feature.center_shape.x|floatformat }}</td>
             
             <td class="latLonColumn right hidden"> 
                 {% if feature.northmostlatitude %} 
@@ -157,17 +158,7 @@
             </td>        
 
             <td class="coordSystemColumn center hidden"> 
-                {% if feature.target.targetcoordinates[0].coordinatesystem.is_positive_east %}
-                +E
-                {% else %}
-                +W
-                {% endif %}
-
-                {% if feature.target.targetcoordinates[0].coordinatesystem.is_0_360 %}
-                (0-360)
-                {% else %}
-                (0-180)
-                {% endif %}
+                {% if feature.target.targetcoordinates[0].coordinatesystem.is_positive_east %}+E {% else %}+W {% endif %}{% if feature.target.targetcoordinates[0].coordinatesystem.is_0_360 %}(0-360){% else %}(0-180){% endif %}
             </td>
             
             <td class="contEthColumn center hidden"> 
@@ -237,10 +228,9 @@
     <div>
       <p>Download all your search results in one of the follow formats (<a class="dont_underline" href="Page/Website">need help?</a>):</p>
       <ul>
-        <li><a target="_new" onClick="$('#displayType').val('CSV'); $('#form').submit();" class="js_action">CSV</a> (comma
+        <li><a target="_new" class="js_action" id="csv_output">CSV</a> (comma
           separated values) for importing into Excel<br/></li>
       </ul>
-      <p>Note - to select which columns are included in your download, use the <a href="AdvancedSearch">Advanced Search</a>.
     </div>
   
   {% else %}
@@ -254,7 +244,12 @@
 
     $(".search_results")
       .tablesorter({
-        widgets: ['zebra'],
+        widgets: ['zebra', 'output'],
+        widgetOptions: {
+          output_separator: ',',
+          output_delivery: 'd',
+          output_saveFileName: 'searchresults.csv'
+        },
         textExtraction: function(node) {
           var attr = $(node).attr('data-sort');
           if (attr !== undefined && attr !== false) {
@@ -277,7 +272,7 @@
       });
       
     // show correct columns when toggled
-    $(document).on('click', '#popup input', function() { 
+    $('#popup input').on('click', function() { 
       var check_box = $(this);
       if(check_box.is(':checked')) {
         $('.' +check_box.attr('name')).removeClass('hidden');
@@ -285,6 +280,12 @@
         $('.' +check_box.attr('name')).addClass('hidden');
       }
     });
+
+    $('#csv_output').on('click', function() {
+      $('.search_results').trigger('outputTable');
+    })
+
+
   });
 
   function updateColumns() {

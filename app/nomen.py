@@ -146,27 +146,6 @@ def searchresults():
 													results = results,
 													simple_search = SimpleSearchForm())
 
-													
-@router.route('/SearchResults/Next Page', endpoint='next', methods = ['POST'])
-@router.route('/SearchResults/Previous Page', endpoint='prev', methods = ['POST'])
-def paginated_results():
-	criterion = request.form.get('feature_name')
-	current_page = int(request.form.get('current_page'))
-	page_results = int(request.form.get('page_results'))
-	paginated_results = None
-
-	if request.endpoint == 'router.next':
-		current_page = current_page + 1
-
-	if request.endpoint == 'router.prev':
-		current_page = current_page - 1	
-
-		
-	paginated_results = CurrentFeature.get_all_likename_paginated(criterion, current_page, page_results, False) 
-	return render_template('resultstable.html', paginated_results = paginated_results)
-
-
-
 @router.route('/TargetCoordinates', methods = ['GET'])
 def targetcoordinates():
 	return render_template('targetcoordinates.html', targets = Target.get_approved(),

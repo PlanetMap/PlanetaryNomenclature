@@ -102,7 +102,7 @@ class Feature(db.Model):
                                     .order_by(Feature.name).all()
 
     def get_one_byname(name):
-        return Feature.query.filter_by(clean_name=name).first()
+        return Feature.query.filter_by(name=name).first()
 
     def get_one_byid(id):
         return Feature.query.filter_by(feature_id=id).first()
