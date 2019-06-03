@@ -36,26 +36,26 @@ def test_continent_get_one(active_context, test_input, expected_result):
 def test_continent_get_all(active_context):
     minimum_result = 2
     with active_context:
-        assert len(Continent.get_all()) > minimum_result
+        assert len(Continent.get_all()) >= minimum_result
 
 def test_ethnicity_get_all(active_context):
     minimum_result = 2
     with active_context:
-        assert len(Ethnicity.get_all()) > minimum_result
+        assert len(Ethnicity.get_all()) >= minimum_result
 
 def test_featurereference_get_all(active_context):
     minimum_result = 2
     with active_context:
-        assert len(FeatureReference.get_all()) > minimum_result
+        assert len(FeatureReference.get_all()) >= minimum_result
 
 def test_featuretype_get_all(active_context):
     minimum_result = 2
     with active_context:
-        assert len(FeatureType.get_all()) > minimum_result
+        assert len(FeatureType.get_all()) >= minimum_result
 
 def test_system_get_all(active_context):
     minimum_result = 2
     with active_context:
-        assert len(System.get_all()) > minimum_result
+        assert len(System.get_all()) >= minimum_result
 
 

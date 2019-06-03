@@ -1,0 +1,411 @@
+{% extends 'page_template.html' %}
+
+{% block head %}
+  {{ super() }} 
+  {% if feature.target.show_map or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 52) 
+                                or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 9) %}
+      <link rel="stylesheet" href="https://astrowebmaps.wr.usgs.gov/webmapatlas/styles/console.css" type="text/css" />
+      <link rel="stylesheet" href="https://astrowebmaps.wr.usgs.gov/webmapatlas/styles/ol.css" type="text/css" />
+      <script src="https://astrowebmaps.wr.usgs.gov/webmapatlas/ol/OpenLayers-2.11/OpenLayers.js" defer></script> 
+      <script src="https://astrowebmaps.wr.usgs.gov/webmapatlas/Layers/maps.js" defer></script>
+      <script src="https://astrowebmaps.wr.usgs.gov/webmapatlas/js/AstroWebMaps.js" defer></script>
+  {% endif %}
+{% endblock %}
+
+{% block title %}{{ feature.featuretype.name }}: {{ feature.name }} on {{ feature.target.name|capitalize }}{% endblock %}
+
+{% block body %}
+  <table class="feature_detail">
+  <tr>
+    <td class="align_top">
+      <h2>{% if feature.approvalstatus.approval_status_id in [6, 7] %}
+            <span class="deprecated">[{{ feature.name }}]</span>
+          {% else %}
+            {{ feature.name }}
+          {% endif %}
+      </h2>
+    <table>
+      <tr>
+        <th width="120px">Feature Name</th>
+        <td>{% if feature.approvalstatus.approval_status_id in [6, 7] %}
+              <span class="deprecated">[{{ feature.name }}]</span>
+            {% else %}
+              {{ feature.name }}
+            {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>Clean Name</th>
+        <td>{{ feature.clean_name }}</td>
+      </tr>
+      <tr>
+        <th>Feature ID</th>
+        <td>{{ feature.feature_id }}</td>
+      </tr>
+      <tr>
+        <th>Target</th>
+        <td>{{ feature.target.display_name }}</td>
+      </tr>
+
+      <tr>
+        <th>Feature Type</th>
+        <td><span title="{{ feature.featuretype.description }}">{{ feature.featuretype.name }}</span></td>
+      </tr>
+
+      <tr>
+        <th>Coordinate System</th>
+        <td>        
+          {% if feature.target.targetcoordinates|length > 1 %} 
+              <select name="selected_coordinate_system" id="selected_coordinate_system">
+                {% for target_coordinate in feature.target.targetcoordinates %}
+                  <option label="{{ target_coordinate.coordinatesystem.name }}" value="{{ target_coordinate.coordinatesystem.coordinate_system_id }}"></option>
+                {% endfor %}
+              </select>
+          {% else %}
+            <input id="selected_coordinate_system" type="hidden" value="{{ feature.target.targetcoordinates[0].coordinate_system_id }}"> 
+            {{ feature.target.targetcoordinates[0].coordinatesystem.name }}
+          {% endif %}
+        </td>
+      </tr>
+      
+      <tr>
+        <th>Control Network</th>
+        <td>
+          {% if feature.featuregeometries|length > 1 %}
+            <select name="selected_control_net" id="selected_control_net" onchange="updateControlNet();">
+              {% for feature_geometry in feature.featuregeometries %}
+                {% if not feature_geometry.controlnet %}
+                  <option value="-1">Unknown</option>
+                {% else %}
+                  <option label="{{ feature_geometry.controlnet.name }}" value="{{ feature_geometry.feature_geometry_id }}" 
+                          {% if feature_geometry.active %} selected {% endif %}></option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          {% else %}
+            {% if feature.featuregeometries[0].controlnet %}
+              <input id="selected_control_net" type="hidden" value="{{ feature.featuregeometries[0].feature_geometry_id }}"> 
+              {{ feature.featuregeometries[0].controlnet.name }}
+            {% else %}
+                  Unknown
+            {% endif %}
+          {% endif %}        
+        </td>
+      </tr>
+
+      <!-- display current feature geometry attributes -->
+      {% for feature_geometry in feature.featuregeometries %}
+        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
+          <th>Northernmost Latitude</th>
+          <td>
+            {% if feature_geometry.northmostlatitude %}
+              {{ "{0:0.2f}".format(feature_geometry.northmostlatitude) }} &deg;
+            {% endif %}
+          </td>
+        </tr>
+        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
+          <th>Southernmost Latitude</th>
+          <td>
+            {% if feature_geometry.southmostlatitude %}
+              {{ "{0:0.2f}".format(feature_geometry.southmostlatitude) }} &deg;
+            {% endif %}
+          </td>
+        </tr>
+        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
+          <th>Easternmost Longitude</th>
+          <td>
+            {% if feature_geometry.eastmostlongitude %}
+              {{ "{0:0.2f}".format(feature_geometry.eastmostlongitude) }} &deg;
+            {% endif %}
+          </td>
+        </tr>
+        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
+          <th>Westernmost Longitude</th>
+          <td>
+            {% if feature_geometry.westmostlongitude %}
+              {{ "{0:0.2f}".format(feature_geometry.westmostlongitude) }} &deg;
+            {% endif %}
+          </td>
+        </tr>
+        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
+          <th>Diameter</th>
+          <td>{{ "{0:0.2f}".format(feature_geometry.diameter) }}<span class="units">km</span></td>
+        </tr>
+        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
+          <th>Center Latitude</th>
+          <td>{{ "{0:0.2f}".format(feature_geometry.center_shape.y) }}  &deg;</td>
+        </tr>
+        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
+          <th>Center Longitude</th>
+          <td>{{ "{0:0.2f}".format(feature_geometry.center_shape.x) }} &deg;</td>
+        </tr>
+      {% endfor %}
+       
+
+      <tr>
+        <th>kml download</th>
+        <td><a href="{{ feature.feature_id }}.kml">{{ feature.name }}.kml</td>
+      </tr>
+
+      <tr>
+        <th>Continent</th>
+        <td>{{ feature.ethnicity.continent.continent_name }}</td>
+      </tr>
+
+      <tr>
+        <th>Ethnic/Cultural<br/>Group or Country</th>
+        <td>{{ feature.ethnicity.ethnicity_name }}</td>
+      </tr>
+
+      <tr>
+        <th>Quad</th>
+        <td>
+          {% if not current_feature.quad_code %}
+            -
+          {% elif not current_feature.quad_link %}
+            <span title="{{ current_feature.quad_name }}">{{ current_feature.quad_code }}</span>
+          {% else %}
+            <span title="{{ current_feature.quad_name }}">{{ current_feature.quad_code }}</span> [<a href="{{ current_feature.quad_link }}" target="_new" title="PDF map of this quad">pdf</a>]
+          {% endif %}
+          </td>
+        </td>
+      </tr>
+
+      <tr>
+        <th>Reference</th>
+        <td>
+          {% if feature.featurereference is not none %}
+            [{{ feature.featurereference.feature_reference_id }}] - {{ feature.featurereference.name }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+
+      <tr>
+        <th>Approval Status</th>
+        <td>{{ feature.approvalstatus.name }}</td>
+      </tr>
+
+      <tr>
+        <th>Approval Date</th>
+        <td>
+          {% if feature.clean_approvaldate is not none %}
+            {{ feature.clean_approvaldate }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+
+      <tr>
+        <th>Origin</th>
+        <td>{{ feature.origin }}</td>
+      </tr>
+
+      <tr>
+        <th>Last Updated</th>
+        <td>{{ feature.updated_on|datetimeformat }}</td>
+      </tr>
+
+      {% if feature.parent %}
+        <tr>
+          <th>Parent Feature</th>
+          <td><a href="/Feature/{{ feature.parent.feature_id }}">{{ feature.parent.name }}</a></td>  
+        </tr>
+      {% endif %}
+
+      {% if feature.childfeatures|length %} 
+        <tr>
+          <th>Satellite Feature(s)</th>
+          <td>
+            {% for childfeature in feature.childfeatures %}
+              <a href="{{ childfeature.feature_id }}">{{ childfeature.name }}</a><br/>
+            {% endfor %}
+          </td> 
+        </tr>
+      {% endif %}
+
+      {% if feature.description %}  
+        <tr>
+          <th>Additional Information</th>
+          <td>{{ feature.description }}</td>
+        </tr>
+      {% endif %}
+      
+    </table>
+    </td>
+    <td valign="top" style="min-width: 536px; width: 536px">
+      <div id="related">
+        {{ related_content }}
+      </div>
+
+      {% if render_map %}
+        <div class="astroConsole" id="astroConsole" style=" width:100%; overflow:hidden">
+          <img class="astroConsoleLeft" src="{{ url_for('static', filename='images/layout/console_left_corner.png') }}"/>
+          <div id="astroConsoleTargetInfo"></div>
+          <div id="astroConsoleProjectionButtons"></div>
+          <div id="astroConsoleLonLatSelects"></div>
+          <div id="astroConsoleKey"></div>
+          <img class="astroConsoleRight" src="{{ url_for('static', filename='images/layout/console_right_corner.png') }}"/>
+        </div>
+          
+        <div id="mapContainer" >
+          <div id="map" class="astroMapSmall" style="background:black;height:580;"></div>
+        </div>      
+          
+        <p><i>The boundaries shown on the maps above are approximate and are intended
+              only to portray the locations of named features and their rough extents.<br/>
+              <a target="_new" href="http://astrodocs.wr.usgs.gov/index.php/Nomenclature:How_to_Use_the_Map_Interface">
+              Get help using the map above</a>.</i>
+        </p>
+        <p><i>Changes in the control network drop down are not reflected in the feature boundaries in the map above. 
+              Only the primary control network feature boundaries (in green) are displayed on the map.</i>
+        </p> 
+      {% endif %}
+
+      </td>
+    </tr>
+  </table>
+
+  <script>
+    var featureSystem = {{ feature.target.system|tojson }};
+    var featureTarget = {{ feature.target.name|tojson }};
+    var renderMap =     {{ render_map|tojson }}
+     
+    // draw AstroMap on window load and coordinate system change
+    $(document).ready( function() {
+      updateControlNet();
+
+      if (renderMap) {
+        drawAstroMap();
+      }
+
+      $(document).on('change', '#selected_control_net', function() {
+        updateControlNet();
+        if (renderMap) {
+          redrawMap();
+        }       
+      });
+
+      $(document).on('change', '#selected_coordinate_system', function() {
+        if (renderMap) {
+          redrawMap();
+        }       
+      });
+    });
+
+    function redrawMap() {
+        $('#astroConsoleLonLatSelects').empty();
+        $('#astroConsoleTargetInfo').empty();
+        $('#astroConsoleProjectionButtons').empty();
+        $('#map').empty();
+        drawAstroMap();   
+    }
+
+    function updateControlNet() {
+      $('tr.geom').hide();
+      var value_of_select = $('#selected_control_net').val();
+      $('tr.geom.' + value_of_select).show();
+    }
+
+    function drawAstroMap() {
+      // specify map settings
+      var consoleSettings = {
+        target: '{{ feature.target.name }}',
+        projButtons: true,
+        lonLatSelects: true,
+        mouseLonLat: true         
+      };
+      var mapSettings = {
+        mapDiv: 'map',
+        target: '{{ feature.target.name }}',
+        projection: 'cylindrical',
+        showNomenclature: false,
+        datelineWrap: true,
+        polygonLayerName: '{{ feature.clean_name }}',
+        defaultZoomLevel: 8,
+        defaultCenterLat: 0,
+        vectorLayerName: 'Feature Boundaries',
+        imagePath: 'https://astrowebmaps.wr.usgs.gov/webmapatlas/images/',
+        defaultCenterLon: 360
+      };
+      var controlSettings = {
+        zoomBar: true,
+        layerSwitcher: true,
+        graticule: true,
+        featureSearch: false,
+        scaleLine: true,
+        overviewMap: true,
+        zoomButton: true,
+        boundingBoxDrawer: false,
+        homeButton: true,
+        selectButton: true,
+        mousePosition: true,
+        resizeGeometryButton: false,
+        reshapeGeometryButton: false,
+        editCenterPointButton: false,
+        transformGeometryButton: false,
+        editGeometryButton: 'none'
+      };
+
+      // create a map with specified settings. No bounding box settings will be passed in,
+      // so defaults will be used for that.      
+      var astroMap = new AstroMap(mapSettings, controlSettings, consoleSettings, null);
+
+      // setup the console to the selected coordinate system
+      var lonlat_selects = $('#astroConsoleLonLatSelects select');
+      {% for target_coordinate in feature.target.targetcoordinates %}
+        if ($('#selected_coordinate_system').val() === '{{ target_coordinate.coordinatesystem.coordinate_system_id|tojson }}') {
+          {% if target_coordinate.coordinatesystem.is_positive_east %}
+            $(lonlat_selects[0]).val("PositiveEast");
+          {% else %}
+            $(lonlat_selects[0]).val("PositiveWest");
+          {% endif %}
+
+          {% if target_coordinate.coordinatesystem.is_0_360 %}
+            $(lonlat_selects[1]).val("360");
+          {% else %}
+            $(lonlat_selects[1]).val("180");
+          {% endif %}
+
+          {% if target_coordinate.coordinatesystem.is_planetographic %}
+            $(lonlat_selects[2]).val("Planetographic");
+          {% else %}
+            $(lonlat_selects[2]).val("Planetocentric");
+          {% endif %}
+        }
+      {% endfor %}
+
+      // manually change map selects to ensure they update
+      $(lonlat_selects[0]).change();
+      $(lonlat_selects[1]).change();
+      $(lonlat_selects[2]).change();
+
+      // draw the geometry based on the currently selected control net
+      {% for feature_geometry in feature.featuregeometries %}
+        {% if feature_geometry.controlnet %}
+          if ($('#selected_control_net').val() === '{{ feature_geometry.feature_geometry_id|tojson }}') {
+            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.center_wkt }}', null, 'purple', 'footprint', true, false);
+            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.geometry_wkt }}', null, 'green', 'footprint', true, false);
+          }
+        {% endif %}
+      {% endfor %}
+
+      //astroMap.vectorDrawer.drawAndStore('{{ feature.featuregeometries[0].wkt_center }}', null, 'purple', 'footprint', true, false);
+      //astroMap.vectorDrawer.drawAndStore('{{ feature.featuregeometries[0].wkt_geometry }}', null, 'green', 'footprint', true, false);
+    
+      // project to stereographic if geometry is polar
+      {% if feature.featuregeometries[0].northmostlatitude %}
+        {% if feature.featuregeometries[0].northmostlatitude > 70 and 
+              feature.featuregeometries[0].southmostlatitude > 70 %}
+              astroMap.switchProject('north-polar stereographic');
+        {% endif %}
+        {% if feature.featuregeometries[0].northmostlatitude < -70 and
+              feature.featuregeometries[0].southmostlatitude < -70 %}
+              astroMap.switchProjection('south-polar stereographic');
+        {% endif %}
+      {% endif %}         
+    }
+  </script>
+{% endblock %}

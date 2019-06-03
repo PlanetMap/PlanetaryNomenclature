@@ -1,9 +1,12 @@
-from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
-from geoalchemy2 import Geometry
+from datetime import date
 from flask_sqlalchemy import SQLAlchemy
+from geoalchemy2 import Geometry
+from geoalchemy2.shape import to_shape
+from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey, BigInteger, Text
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
 
 db = SQLAlchemy()
 
@@ -82,10 +85,24 @@ class Feature(db.Model):
     target              = relationship('Target')
     featurereference    = relationship('FeatureReference')
     approvalstatus      = relationship('ApprovalStatus')
-    parentfeature       = relationship('Feature', remote_side=feature_id, backref='sub_features')
+    parentfeature       = relationship('Feature', remote_side=feature_id, backref='childfeatures')
+
+    @hybrid_property
+    def show_year(self):
+        if self.approval_date is None:
+            return false
+        elif self.approval_date.date() < date(2006, 9, 13):
+            return true
+        else:
+            return false
+
+    def get_all_likename(name):
+        name_string = '{0}{1}{0}'.format('%', name)
+        return Feature.query.filter(Feature.name.ilike(name_string))\
+                                    .order_by(Feature.name).all()
 
     def get_one_byname(name):
-        return Feature.query.filter_by(clean_name=name).first()
+        return Feature.query.filter_by(name=name).first()
 
     def get_one_byid(id):
         return Feature.query.filter_by(feature_id=id).first()
@@ -107,12 +124,16 @@ class Target(db.Model):
     features            = relationship('Feature', back_populates ='target')
     targetcoordinates   = relationship('TargetCoordinate', back_populates='target')
     controlnets         = relationship('ControlNet', back_populates='target')
+    currentfeatures     = relationship('CurrentFeature', back_populates = 'target')
 
     def get_all():
         return Target.query.order_by(Target.display_name).all()
 
     def get_approved():
-        return Target.query.join(Feature).order_by(Target.display_name).all()
+        return Target.query.join(Feature)\
+                            .filter_by(approval_status_id=5)\
+                            .order_by(Target.display_name)\
+                            .all()
 
 class ApprovalStatus(db.Model):
     __tablename__       = 'approvalstatuses'
@@ -168,7 +189,24 @@ class FeatureGeometry(db.Model):
     eastmostlongitude   = Column(DOUBLE_PRECISION) 
     westmostlongitude   = Column(DOUBLE_PRECISION)
     feature             = relationship('Feature', back_populates='featuregeometries')
+    #currentfeature      = relationship('CurrentFeature', back_populates='featuregeometry')
     controlnet          = relationship('ControlNet')
+
+    @hybrid_property
+    def center_shape(self):
+        return to_shape(self.center_point)
+
+    @hybrid_property
+    def geometry_shape(self):
+        return to_shape(self.geometry)
+
+    @hybrid_property
+    def center_wkt(self):
+        return (self.center_shape).to_wkt()
+
+    @hybrid_property
+    def geometry_wkt(self):
+        return (self.geometry_shape).to_wkt()
 
 class Ethnicity(db.Model):
     __tablename__   = 'ethnicities'
@@ -232,14 +270,22 @@ class FeatureType(db.Model):
                                 .filter_by(name=target_name)\
                                 .order_by(FeatureType.name)
 
+class QuadGroup(db.Model):
+    __tablename__   = 'quadgroups'
+    quad_group_id   = Column(Integer, primary_key=True, autoincrement=True)
+    name            = Column(String(1024))
+    target_id       = Column(Integer, ForeignKey('targets.target_id'))
+    target          = relationship('Target')
+
 class Quad(db.Model):
     __tablename__   = 'quads'
     quad_id         = Column(Integer, primary_key=True, autoincrement=True)
-    quad_group_id   = Column(Integer)
+    quad_group_id   = Column(Integer, ForeignKey('quadgroups.quad_group_id'))
     name            = Column(String(1024))
     code            = Column(String(20))
     link            = Column(String(1024))
     geometry        = Column(Geometry('GEOMETRY'))
+    quadgroup       = relationship('QuadGroup')           
 
 class TargetCoordinate(db.Model):
     __tablename__           = 'targetcoordinates'
@@ -250,6 +296,90 @@ class TargetCoordinate(db.Model):
     priority                = Column(Integer)
     target                  = relationship('Target', back_populates='targetcoordinates')
     coordinatesystem        = relationship('CoordinateSystem')
+
+class CurrentFeature(db.Model):
+    __tablename__           = 'current_features_view'
+    feature_id              = Column(Integer, primary_key=True, nullable=False)
+    name                    = Column(String(1024))
+    clean_name              = Column(String(1024))
+    legacy_name             = Column(String(1024))
+    ethnicity_id            = Column(Integer, ForeignKey('ethnicities.ethnicity_id'))
+    ct_ethnicity            = Column(Text)
+    feature_type_id         = Column(Integer, ForeignKey('featuretypes.feature_type_id'))
+    parent_id               = Column(Integer)
+    target_id               = Column(Integer, ForeignKey('targets.target_id'))
+    feature_reference_id    = Column(Integer, ForeignKey('featurereferences.feature_reference_id'))
+    description             = Column(String(1024))
+    approval_status_id      = Column(Integer, ForeignKey('approvalstatuses.approval_status_id'))
+    approval_date           = Column(DateTime(timezone=False))
+    origin                  = Column(String(1024))
+    feature_updated_on      = Column(DateTime(timezone=False))
+    feature_geometry_id     = Column(Integer, nullable=False)
+    geometry                = Column(Geometry('GEOMETRY'), nullable=False)
+    center_point            = Column(Geometry('GEOMETRY'), nullable=False)
+    northmostlatitude       = Column(DOUBLE_PRECISION)
+    southmostlatitude       = Column(DOUBLE_PRECISION)
+    eastmostlongitude       = Column(DOUBLE_PRECISION)
+    westmostlongitude       = Column(DOUBLE_PRECISION)
+    diameter                = Column(REAL)
+    control_net_id          = Column(Integer)
+    geom_created_on         = Column(DateTime(timezone=False))
+    geom_updated_on         = Column(DateTime(timezone=False))
+    quad_name               = Column(String(1024))
+    quad_code               = Column(String(20))
+    quad_link               = Column(String(1024))
+    active                  = Boolean
+    ethnicity               = relationship('Ethnicity') # DONE
+    featuretype             = relationship('FeatureType') # DONE
+    target                  = relationship('Target') # DONE
+    featurereference        = relationship('FeatureReference') # DONE
+    approvalstatus          = relationship('ApprovalStatus') # DONE
+    #parentfeature           = relationship('Feature', remote_side=feature_id, backref='childfeatures')
+
+    def get_all():
+        return CurrentFeature.query.order_by(clean_name).all()
+
+    def get_all_likename(name):
+        name_string = '{0}{1}{0}'.format('%', name)
+        return CurrentFeature.query.filter(CurrentFeature.name.ilike(name_string))\
+                                    .order_by(CurrentFeature.name).all()
+
+    def get_all_likename_paginated(name, page_number, page_results, error_flag):
+        name_string = '{0}{1}{0}'.format('%', name)
+        return CurrentFeature.query.filter(CurrentFeature.name.ilike(name_string))\
+                                    .order_by(CurrentFeature.name)\
+                                    .paginate(page_number, page_results, False)
+
+    def get_one_byname(name):
+        return CurrentFeature.query.filter_by(name=name).first()
+
+    def get_one_byid(id):
+        return CurrentFeature.query.filter_by(feature_id=id).first()
+    
+    @hybrid_property
+    def show_year(self):
+        if self.approval_date is None:
+            return False
+        elif self.approval_date.date() < date(2006, 9, 13):
+            return True
+        else:
+            return False
+
+    @hybrid_property
+    def center_shape(self):
+        return to_shape(self.center_point)
+
+    @hybrid_property
+    def geometry_shape(self):
+        return to_shape(self.geometry)
+
+    @hybrid_property
+    def center_wkt(self):
+        return (self.center_shape).to_wkt()
+
+    @hybrid_property
+    def geometry_wkt(self):
+        return (self.geometry_shape).to_wkt()
 
 class System():
 
