@@ -12,7 +12,7 @@
   {% endif %}
 {% endblock %}
 
-{% block title %}{{ feature.featuretype.name }}: {{ feature.name }} on {{ feature.target.name|capitalize }}{% endblock %}
+{% block title %}{{ feature.featuretype.name }}: {{ feature.name }} on {{ feature.target.name|title }}{% endblock %}
 
 {% block body %}
   <table class="feature_detail">
@@ -149,12 +149,24 @@
 
       <tr>
         <th>Continent</th>
-        <td>{{ feature.ethnicity.continent.continent_name }}</td>
+        <td>
+          {% if feature.ethnicity.continent %}
+            {{ feature.ethnicity.continent.continent_name }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
       </tr>
 
       <tr>
         <th>Ethnic/Cultural<br/>Group or Country</th>
-        <td>{{ feature.ethnicity.ethnicity_name }}</td>
+        <td>
+          {% if feature.ethnicity %}
+            {{ feature.ethnicity.ethnicity_name }}
+          {% else %}
+            -
+          {% endif %}  
+        </td>
       </tr>
 
       <tr>
@@ -190,10 +202,12 @@
       <tr>
         <th>Approval Date</th>
         <td>
-          {% if feature.clean_approvaldate is not none %}
-            {{ feature.clean_approvaldate }}
-          {% else %}
+          {% if not feature.approval_date %}
             -
+          {% elif feature.show_year %}
+            {{ feature.approval_date|yearformat }}
+          {% else %}
+            {{ feature.approval_date|dateformat }}
           {% endif %}
         </td>
       </tr>

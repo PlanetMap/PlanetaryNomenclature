@@ -1,8 +1,8 @@
-from flask import Flask, Blueprint, render_template, request, Response, redirect, jsonify
+from datetime import datetime
+from flask import Flask, Blueprint, render_template, request, Response, redirect, abort
 from jinja2 import Markup
-from database import (db, PagePart, Feature, Target, ApprovalStatus, Continent,
-	Ethnicity, FeatureReference, FeatureType, System, FeatureGeometry, CurrentFeature)
-from forms import SimpleSearchForm, PagingForm
+from database import (db, PagePart, Feature, Target, ApprovalStatus, Continent, 
+	Ethnicity, FeatureReference, FeatureType, FeatureGeometry, CurrentFeature, CoordinateSystem)
 
 router = Blueprint('router', __name__, template_folder='templates')
 
@@ -18,10 +18,13 @@ def datetimeformat(value, format='%b %d, %Y %-I:%M %p'):
 def floatformat(value):
 	return '{0:0.2f}'.format(value)
 
+def page_not_found(e):
+	return render_template('404.html'), 404
+
 def create_app(config_mode):
 
 	"""
-	Nomenclature App Factory / Acceptable modes: Acceptable Config Modes: 'Dev', 'Test'
+	Nomenclature App Factory / Acceptable Config Modes: 'Dev', 'Test'
 	"""
 	app = Flask(__name__, instance_relative_config=True)
 
@@ -34,6 +37,7 @@ def create_app(config_mode):
 	
 	db.init_app(app)
 	app.register_blueprint(router)
+	app.register_error_handler(404, page_not_found)
 	app.jinja_env.filters['yearformat'] = yearformat
 	app.jinja_env.filters['dateformat'] = dateformat
 	app.jinja_env.filters['datetimeformat'] = datetimeformat
@@ -42,36 +46,31 @@ def create_app(config_mode):
 
 @router.route('/', methods = ['GET'])
 def home():
-	return render_template('home.html', simple_search = SimpleSearchForm())
-
+	return render_template('home.html', )
 
 @router.route('/Abbreviations', methods = ['GET'])
 def abbreviations():
-	return render_template('abbreviations.html', abbreviations = Continent.get_all(), 
-												simple_search = SimpleSearchForm())
+	return render_template('abbreviations.html', abbreviations = Continent.get_all([Continent.continent_name]))
 
-@router.route('/AdvancedSearch', methods=['GET'])
+@router.route('/AdvancedSearch', methods=['GET', 'POST'])
 def advancedsearch():
-	return render_template('advancedsearch.html', systems = System.get_all(),
-												approved_targets = Target.get_approved(),
-												feature_types = FeatureType.get_all(),
-												continents = Continent.get_all(),
-												approval_statuses = ApprovalStatus.get_all(),
-												feature_references = FeatureReference.get_all(),
-												simple_search = SimpleSearchForm())
+	criteria = {}
+
+	if request.method == 'POST':
+		criteria = request.form.to_dict()
+
+	return render_template('advancedsearch.html', approved_targets = Target.get_many([Target.features], 
+												  									 [Feature.approval_status_id == 5],
+																					 [Target.display_name]),
+												  feature_types = FeatureType.get_all([FeatureType.name]),
+												  continents = Continent.get_all([Continent.continent_name]),												
+												  approval_statuses = ApprovalStatus.get_all(),
+												  criteria = criteria,
+												  feature_references = FeatureReference.get_all([FeatureReference.feature_reference_id]))
 
 @router.route('/DescriptorTerms', methods = ['GET'])
 def descriptorterms():
-	return render_template('descriptorterms.html', terms = FeatureType.get_all(),
-												simple_search = SimpleSearchForm())
-
-@router.route('/GIS_Downloads', methods = ['GET'])
-def gisdownloads():
-	page = PagePart.get_page("basic", 'GIS_Downloads')
-	return render_template('page_template.html', page_title = Markup(page.title),
-												page_body = Markup(page.body),
-												page_javascript = Markup(page.javascript),
-												simple_search = SimpleSearchForm())
+	return render_template('descriptorterms.html', terms = FeatureType.get_all([FeatureType.name]))
 
 @router.route('/Feature/<int:input_feature>', endpoint='feature_id', methods = ['GET'])
 @router.route('/Feature/<string:input_feature>', endpoint='feature_name', methods = ['GET'])
@@ -79,106 +78,169 @@ def feature(input_feature):
 	feature = None
 	current_feature = None
 	if request.endpoint == 'router.feature_id':
-		feature = Feature.get_one_byid(input_feature)
-		current_feature = CurrentFeature.get_one_byid(input_feature)
+		feature = Feature.get_one([Feature.feature_id == input_feature])
+		current_feature = CurrentFeature.get_one([CurrentFeature.feature_id == input_feature])
 	elif request.endpoint == 'router.feature_name':
-		feature = Feature.get_one_byname(input_feature)
-		current_feature = Feature.get_one_byname(input_feature)
+		feature = Feature.get_one([Feature.name == input_feature])
+		current_feature = CurrentFeature.get_one([CurrentFeature.name == input_feature])
 	else:
-		return render_template('404.html', simple_search = SimpleSearchForm())
+		abort(404)
 
 	if feature and current_feature:
 		related_content = PagePart.get_page("target", feature.target.name).feature_related
 		render_map = feature.target.show_map or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 52)\
-										 or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 9)
+										 	 or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 9)
 		
 		return render_template('feature_template.html', feature = feature,
-												current_feature = current_feature,
-												related_content = Markup(related_content),
-												render_map = render_map,
-												simple_search = SimpleSearchForm())
+														current_feature = current_feature,
+														related_content = Markup(related_content),
+														render_map = render_map)
 	else:
-		return render_template('404.html', simple_search = SimpleSearchForm())
+		abort(404)
 	
 	# TODO: generate KML from primary attributes (MDIM and CS)
 	
+@router.route('/GIS_Downloads', methods = ['GET'])
+def gisdownloads():
+	page = PagePart.get_page("basic", 'GIS_Downloads')
+	return render_template('page_template.html', page_title = Markup(page.title),
+												 page_body = Markup(page.body),
+												 page_javascript = Markup(page.javascript))
+
 
 @router.route('/FeatureNameRequest', methods = ['GET'])
 def namerequest():
-	return render_template('featurenamerequest.html', systems = System.get_all(),
-												    target = Target.get_all(),
-													feature_types = FeatureType.get_all(),
-													continents = Continent.get_all(),
-													ethnicities = Ethnicity.get_all(),
-													feature_references = FeatureReference.get_all(),
-													simple_search = SimpleSearchForm())
+	return render_template('featurenamerequest.html', target = Target.get_all([Target.display_name]),
+													  feature_types = FeatureType.get_all([FeatureType.name]),
+													  continents = Continent.get_all([Continent.continent_name]),
+													  ethnicities = Ethnicity.get_all([Ethnicity.ethnicity_name]),
+													  feature_references = FeatureReference.get_all([FeatureReference.feature_reference_id]))
 
 @router.route('/References', methods = ['GET'])
 def references():
-	return render_template('references.html', references = FeatureReference.get_all(),
-											simple_search = SimpleSearchForm())
+	return render_template('references.html', references = FeatureReference.get_all([FeatureReference.feature_reference_id]))
 
 @router.route('/SearchResults', methods = ['GET', 'POST'])
 def searchresults():
-	default_cs = 'planetocentric'
-	criteria = {}
+	planetographic = False
+	filters = []
 	results = []
+	criteria_labels = {}
+	criteria = {}
 
-	if request.method == 'POST':
-		# if a simple search
-		if 'simple_submit' in request.form:
-			#criteria['feature_name'] = request.form.get('feature_name')
-			results = CurrentFeature.get_all_likename(request.form.get('feature_name'))
+	try:
 
-		# if an advanced search
-		if 'advanced_submit' in request.form:
-			results = CurrentFeature.get_all_likename(request.form.get('feature_name'))
+		if request.method == 'POST' and request.form:
+			# feature name is in both POST types
+			if request.form.get('Feature Name'):
+				value = request.form.get('Feature Name')
+				criteria_labels['Feature Name'] = value
+				filters.append(CurrentFeature.name.ilike(r'%{}%'.format(value)))
+				
+			# if an advanced search, add filters
+			if 'advanced_submit' in request.form:
+				if request.form.get('System'):
+					value = request.form.get('System')
+					criteria_labels['System'] = value
+					filters.append(Target.system.ilike(value))
+				if request.form.get('Target'):
+					value, criteria_labels['Target'] = request.form.get('Target').split('_')
+					filters.append(CurrentFeature.target_id == value)
+				if request.form.get('Feature Type'):
+					value, criteria_labels['Feature Type'] = request.form.get('Feature Type').split('_')
+					filters.append(CurrentFeature.feature_type_id == value)
+				if request.form.get('Approval Status'):
+					value, criteria_labels['Approval Status'] = request.form.get('Approval Status').split('_')
+					filters.append(CurrentFeature.approval_status_id == value)
+				if request.form.get('Minimum Feature Diameter'):
+					criteria_labels['Minimum Feature Diameter'] = request.form.get('Minimum Feature Diameter')
+					filters.append(CurrentFeature.diameter >= request.form.get('Minimum Feature Diameter', type=float))
+				if request.form.get('Maximum Feature Diameter'):
+					criteria_labels['Maximum Feature Diameter'] = request.form.get('Maximum Feature Diameter')
+					filters.append(CurrentFeature.diameter <= request.form.get('Maximum Feature Diameter', type=float))
+				if request.form.get('Earliest Approval Date'):
+					label = request.form.get('Earliest Approval Date')
+					value = datetime.strptime(label, '%m-%d-%Y')
+					criteria_labels['Earliest Approval Date'] = label
+					filters.append(CurrentFeature.approval_date >= value)
+				if request.form.get('Latest Approval Date'):
+					label = request.form.get('Latest Approval Date')
+					value = datetime.strptime(label, '%m-%d-%Y')
+					criteria_labels['Latest Approval Date'] = label
+					filters.append(CurrentFeature.approval_date <= value)
+				if request.form.get('Continent'):
+					value, criteria_labels['Continent'] = request.form.get('Continent').split('_')
+					filters.append(Ethnicity.continent_id == value)
+				if request.form.get('Ethnicity'):
+					value = request.form.get('Ethnicity')
+					criteria_labels['Ethnicity'] = value[2:]
+					filters.append(CurrentFeature.ct_ethnicity == value)
+				if request.form.get('Reference'):
+					value, criteria_labels['Reference'] = request.form.get('Reference').split('_')
+					filters.append(CurrentFeature.feature_reference_id == value)
+
+			criteria = request.form.to_dict()
+
+		elif request.method == 'GET' and request.args.get('Target'):
+			value, criteria_labels['Target'] = request.args.get('Target').split('_')
+			filters.append(CurrentFeature.target_id == value)
+
+			if request.args.get('Feature Type'):
+				value, criteria_labels['Feature Type'] = request.args.get('Feature Type').split('_')
+				filters.append(CurrentFeature.target_id == value)
+			
+			criteria = request.args.to_dict()
+
+		else:
+			abort(404)
 	
-	# if exactly one result, redirect to feature page	
-	if len(results) == 1:
-		feature = results[0]
-		return redirect('/Feature/{0}'.format(feature.name))
-
-	# otherwise, load search results
+	except:
+		abort(404)
+	
+	if filters:
+		results = CurrentFeature.get_many([Target, Ethnicity], filters, [CurrentFeature.name])	
+		# if one result, redirect to feature page	
+		if len(results) == 1:
+			return redirect('/Feature/{0}'.format(results[0].name))
 	else:
-		return render_template('searchresults.html',default_cs = default_cs,
-													criteria = criteria,
-													results = results,
-													simple_search = SimpleSearchForm())
+		results = CurrentFeature.get_all([CurrentFeature.name])
+
+	return render_template('searchresults.html', planetographic = planetographic,
+												 criteria = criteria,
+												 criteria_labels = criteria_labels,
+												 results = results)
 
 @router.route('/TargetCoordinates', methods = ['GET'])
 def targetcoordinates():
-	return render_template('targetcoordinates.html', targets = Target.get_approved(),
-													simple_search = SimpleSearchForm())
+	return render_template('targetcoordinates.html', targets = Target.get_many([Feature],
+																			   [Feature.approval_status_id == 5],
+																			   [Target.display_name]))
 
 @router.route('/Page/<page_name>', methods = ['GET'])
 def basicpage(page_name):
 	page = PagePart.get_page("basic", page_name)
 	return render_template('page_template.html', page_title = Markup(page.title),
-												page_body = Markup(page.body),
-												page_javascript = Markup(page.javascript),
-												simple_search = SimpleSearchForm())
+												 page_body = Markup(page.body),
+												 page_javascript = Markup(page.javascript))
 
 @router.route('/Page/<target_name>/target', methods = ['GET'])
 def targetpage(target_name):
 	page = PagePart.get_page("target", target_name)
-	feature_types = FeatureType.get_bytarget(target_name)
+	target = Target.get_one([Target.name == target_name])
+	feature_types = FeatureType.get_many([Feature, Target], [Target.name == target_name], [FeatureType.name])
 	return render_template('target_template.html', page_title = Markup(page.title),
-												page_body = Markup(page.body),
-												page_javascript = Markup(page.javascript),
-												page_featurerelated = Markup(page.feature_related),
-												page_related = Markup(page.related),
-												target_name = target_name,
-												feature_types = feature_types,
-												simple_search = SimpleSearchForm())
+												   page_body = Markup(page.body),
+												   page_javascript = Markup(page.javascript),
+												   page_featurerelated = Markup(page.feature_related),
+												   page_related = Markup(page.related),
+												   target = target,
+												   feature_types = feature_types)
 
 @router.route('/Page/<system_name>/system', methods = ['GET'])
 def systempage(system_name):
 	page = PagePart.get_page("system", system_name)
 	return render_template('system_template.html', page_title = Markup(page.title),
-												page_body = Markup(page.body),
-												simple_search = SimpleSearchForm())
-
+												   page_body = Markup(page.body))
 
 if __name__ == "__main__":
 	NomenApp = create_app('Dev')

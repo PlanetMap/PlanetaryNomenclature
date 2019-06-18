@@ -6,93 +6,6 @@
 
 {% block body %}
 
-  <script type="text/javascript">
-    // <!--     
-    /** Function to submit a request and invoke a handler when it completes. */
-    function make_ajax_request(handler) {
-      var params = $("form").serialize();
-      $.post("${contextPath}/AdvancedSearch/ajax", params,  handler);
-    }
-    
-    function toggle_lat_long() {
-      if($('#target').val() == "") {
-        $('.latlon input').attr("disabled", true);
-        $('.latlon select').attr("disabled", true);
-      } else { // enable
-        $('.latlon input').removeAttr("disabled");
-        $('.latlon select').removeAttr("disabled");
-      }
-    }
-    
-    // uses the returned xml document to set the values for the coordinate system drop down.
-    function handle_ajax_for_target(xml_data) {
-      // console.log("setting coords"); 
-      var element = $(xml_data);
-      $('#is_0_360').val(element.filter("#is_0_360").html());
-      $('#is_positive_east').val(element.filter("#is_positive_east").html());
-      $('#is_planetographic').val(element.filter("#is_planetographic").html());
-      
-      var current_target = $('#target').val();
-      var current_type   = $('#featureType').val();
-      
-      $('#target').html($(xml_data).filter("#target_selection").find("option")); // update the selection options
-      $('#featureType').html($(xml_data).filter("#featureType_selection").find("option")); // update the selection options
-      
-      
-      $('#target').val(current_target);    // reset the selection to the last choice
-      $('#featureType').val(current_type); // reset the selection to the last choice
-      toggle_lat_long()         
-    }
-
-    function handle_ajax_for_system(xml_data) {
-      // console.log("setting coords"); 
-      var element = $(xml_data);
-      $('#is_0_360').val(element.filter("#is_0_360").html());
-      $('#is_positive_east').val(element.filter("#is_positive_east").html());
-      $('#is_planetographic').val(element.filter("#is_planetographic").html());
-      
-      $('#target').html($(xml_data).filter("#target_selection").find("option")); // update the selection options
-      
-      if( $('#target > option').size() == 2 ) {  // if there is only one other option other than 'all', so select it
-        $('#target > option:last-child').attr("selected", true);
-      } else { // else reset the selection to the first choice
-        $('#target').val(""); 
-      }
-      toggle_lat_long()
-      
-      $('#featureType').html($(xml_data).filter("#featureType_selection").find("option")); // update the selection options
-      $('#featureType').val(""); // reset the selection to the last choice
-    }
-    
-    $(document).ready(function() { 
-      // target and system are mutually excuslive 
-      $('#system').change( function() { 
-        make_ajax_request(handle_ajax_for_system);
-      });
-      $('#target').change( function() { 
-        make_ajax_request(handle_ajax_for_target);
-      });
-      
-      // ethnicity and continent are mutually excuslive 
-      $('#ethnicity').change( function() { disable($('#ethnicity'), $('#continent'), false); });
-      $('#continent').change( function() { disable($('#continent'), $('#ethnicity'), false); });
-      
-      toggle_lat_long();
-      
-      // need to set these manually for some reason stripes has an issue with these post variables and select options
-      /*<c:if test="${actionBean.is_planetographic != null}">
-      $('#is_planetographic').val("${actionBean.is_planetographic}");
-      </c:if>
-      <c:if test="${actionBean.is_positive_east != null}">
-      $('#is_positive_east').val("${actionBean.is_positive_east}");
-      </c:if>
-      <c:if test="${actionBean.is_0_360 != null}">
-      $('#is_0_360').val("${actionBean.is_0_360}");
-      </c:if>*/     
-    });
-    // -->
-  </script>
-
   <h2>Advanced Nomenclature Search</h2>
   <hr/>
   <p>This search engine searches the database of planetary surface feature
@@ -100,111 +13,142 @@
       moons</a> and information about the <a href="Page/Rings">names of rings and ring gaps</a>.  </p>
   <hr/>
 
-  <form id="form">
+  <form id="form" action="/SearchResults" method='post'>
     <div id="errors">
-      <!--<s:errors/>
-      <s:messages/>-->
+      {% if errors %}
+      {{ errors }}
+      {% endif %}
+
+      {% if messages %}
+      {{ messages }}
+      {% endif %}
     </div>
     <table class="advanced_search">
       
       <tr><!------------------------- SYSTEM -------------------------------->
-        <td><strong><label for="system">System:</label></strong></td>
+        <td><strong><label for="System">System:</label></strong></td>
         <td>
-          <select name="system" id="system">
+          <select name="System" id="system">
             <option value="">All</option>
-            {% for system in systems %}
-              <option value="{{system.system}}">{{system.system}}</option>
+            {% for target in approved_targets|unique(attribute='system')|sort(attribute='system') %}
+              <option value="{{ target.system|title }}" 
+                {% if target.system|title == criteria['System'] %} selected {% endif %}>
+                {{ target.system|title }}
+              </option>
             {% endfor %}
-            <!--<options-collection collection="${actionBean.listHelper.systems}"/>-->
-          </select>
-  
-          <div style="float:right">
-            <button type="submit" name="Search" value="Search" class="submit_button">Search</button>
-          </div>
+          </select> 
         </td>
+      </tr>
+
+      <tr>
+        <td></td>
+        <td style="padding: 0 5px;"><b>or</b></td>
       </tr>
       
       <tr><!------------------------- TARGET -------------------------------->
-        <td><strong><label for="target">Target:</label></strong></td>
+        <td><strong><label for="Target">Target:</label></strong></td>
         <td>
-          <select name="target" id="target">
+          <select name="Target" id="target">
             <option value="">All</option>
             {% for target in approved_targets %}
-              <option value="{{target.display_name}}">{{target.display_name}}</option>
+              <option value="{{ target.target_id }}_{{ target.display_name }}"
+                {% if target.target_id ~ '_' ~ target.display_name == criteria['Target'] %} selected {% endif %}>
+                {{ target.display_name }}
+              </option>
             {% endfor %}
           </select>
         </td>
       </tr>
+
+      <tr><td></td></tr>
       
       <tr><!------------------------- COORDINATE SYSTEM --------------------->
         <td><strong>Coordinate System:</strong></td>
         <td>
-          <select name="is_positive_east" id="is_positive_east" title="Coordinate System is positive east">
-            <option value="true">+East</option>
+          <select name="Positive East" id="is_positive_east" title="Coordinate System is positive east" 
+                  data-cs="true" data-default="true">
+            <option value="true" selected>+East</option>
             <option value="false">+West</option>
           </select>
-          <select name="is_0_360" id="is_0_360" title="Coordinate System is 0-360?">
-            <option value="true">0 - 360</option>
+          <select name="0-360" id="is_0_360" title="Coordinate System is 0-360?" 
+                  data-cs="true" data-default="true">
+            <option value="true" selected>0 - 360</option>
             <option value="false">(-180) - 180</option>
           </select>
-          <select name="is_planetographic" id="is_planetographic" title="Coordinate System is planetographic">
-            <option value="false">Planetocentric</option>
+          <select name="Planetographic" id="is_planetographic" title="Coordinate System is planetographic" 
+                  data-cs="true" data-default="false">
+            <option value="false" selected>Planetocentric</option>
             <option value="true">Planetographic</option>
           </select>
-          <a href="Page/Website#coordinatesystems" title="need help with coordinate systems?" target="_new">not sure?</a>
+          <a href="Page/Website_coordinatesystems" title="need help with coordinate systems?" target="_new">not sure?</a>
         </td>
       </tr>
 
       <tr><!------------------------- LAT/LONG ------------------------------>
         <td><strong>Latitude Longitude:</strong><br/><i>Can only be applied to<br/>one target.</i></td>
         <td>
-          <div><i>Search Results will identify features whose center points or extents intersect the 
-                  latitude/longitude parameters set here.</i></div>
+          <div class="note">Search Results will identify features whose center points or extents intersect the 
+                  latitude/longitude parameters set here.
+          </div>
           <table class="latlon">
             <tr>
-              <td><label for="northernLatitude">Northernmost Latitude:</label></td>
-              <td><input type="text" name="northernLatitude"></td>
+              <td>Latitude:</td>
+              <td>
+                <input type="text" name="north_lat" placeholder="northernmost" title="Northernmost Latitude: N.NN"
+                       value="{{ criteria['Northernmost Latitude'] }}" pattern="^\d*\.?\d{2}$" disabled>
+                to
+                <input type="text" name="south_lat" placeholder="southernmost" title="Southernost Latitude: N.N"
+                       value="{{ criteria['Southernmost Latitude'] }}" pattern="^\d*\.?\d{2}$" disabled>
+              </td>
             </tr>
             <tr>
-              <td><label for="southernLatitude">Southernmost Latitude:</label></td>
-              <td><input type="text" name="southernLatitude"></td>
-            </tr>
-            <tr>
-              <td><label for="easternLongitude">Easternmost Longitude:</label></td>
-              <td><input type="text" name="easternLongitude"></td>
-            </tr>
-            <tr>
-              <td><label for="westernLongitude">Westernmost Longitude:</label></td>
-              <td><input type="text" name="westernLongitude"></td>
+              <td>Longitude:</td>
+              <td>
+                <input type="text" name="east_long" placeholder="easternmost" title="Easternmost Longitude: N.NN" 
+                       value="{{ criteria['Easternmost Longitude'] }}" pattern="^\d*\.?\d{2}$" disabled>
+                to
+                <input type="text" name="west_long" placeholder="westernmost" title="Westernmost Longitude: N.NN" 
+                       value="{{ criteria['Westernmost Longitude'] }}" pattern="^\d*\.?\d{2}$" disabled>
+              </td>
             </tr>
           </table>
         </td>
       </tr>
       
       <tr><!------------------------- FEATURE TYPE -------------------------->
-        <td><strong><label for="featureType">Feature Type:</label></strong></td>
+        <td><strong><label for="Feature Type">Feature Type:</label></strong></td>
         <td>
-          <select name="featureType" id="featureType">
+          <select name="Feature Type" id="featureType">
             <option value="">All</option>
             {% for feature_type in feature_types %}
-              <option value="{{feature_type.name}}">{{feature_type.name}}</option>
+              <option value="{{ feature_type.feature_type_id }}_{{ feature_type.name }}"
+                {% if feature_type.feature_type_id ~ '_' ~ feature_type.name == criteria['Feature Type'] %} 
+                  selected {% endif %}>
+                {{ feature_type.name }}
+              </option>
             {% endfor %}
           </select>
         </td>
       </tr>
 
       <tr><!------------------------- FEATURE NAME -------------------------->
-        <td><strong><label for="feature">Feature Name:</label></strong></td>
-        <td><input type="text" name="feature"></td>
+        <td><strong><label for="Feature Name">Feature Name:</label></strong></td>
+        <td><input type="text" name="Feature Name" maxlength="40" value="{{ criteria['Feature Name'] }}"></td>
       </tr>
 
       <tr><!------------------------- APPROVAL STATUS ----------------------->
-        <td><strong><label for="approvalStatus">Approval Status:</label></strong></td>
+        <td><strong><label for="Approval Status">Approval Status:</label></strong></td>
         <td>
-          <select name="approvalStatus">
+          <select name="Approval Status" id="approval_status">
             <option value="">All</option>
             {% for approval_status in approval_statuses %}
-              <option value="{{approval_status.name}}">{{approval_status.name}}</option>
+              {% if approval_status.approval_status_id in [5,6,7] %}
+                <option value="{{ approval_status.approval_status_id }}_{{ approval_status.name }}"
+                  {% if approval_status.approval_status_id ~ '_' ~ approval_status.name == criteria['Approval Status'] %} 
+                    selected {% endif %}>
+                  {{ approval_status.name }}
+                </option>
+              {% endif %}
             {% endfor %}
           </select>
         </td>
@@ -212,134 +156,137 @@
 
       <tr><!------------------------- FEATURE DIAMETER ---------------------->
         <td><strong>Feature Diameter (km):</strong></td>
-        <td>
-          &le; <input type="text" name="minFeatureDiameter" title="min Feature Diameter"><br/>
-          &ge; <input type="text" name="maxFeatureDiameter" title="max Feature Diameter">
+        <td><input type="text" class="diameter_input" name="Minimum Feature Diameter" title="minimum diameter: N.NN" placeholder="minimum"
+                   pattern="^\d*\.?\d{2}$" value="{{ criteria['Minimum Feature Diameter'] }}">
+            to
+            <input type="text" class="diameter_input" name="Maximum Feature Diameter" title="maximum diameter: N.NN" placeholder="maximum"
+                   pattern="^\d*\.?\d{2}$" value="{{ criteria['Maximum Feature Diameter'] }}">
         </td>
       </tr>
 
-      <tr> <!------------------------ APPROVAL DATE ------------------------->
+      <tr><!------------------------ APPROVAL DATE -------------------------->
         <td><strong>Approval Date:</strong></td>
-        <td>
-          After: <input type="text" name="beginDate" title="beginDate"><i>MM-DD-YYYY</i><br/>
-          Before: <input type="text" name="endDate" title="endDate"><i>MM-DD-YYYY</i><br/>
-          <i>Month and day values were added to the database on 2006-09-13. Prior to that date, only the   
-              year was recorded.
-          </i>
+        <td><div class="note">Month and day values were added to the database on 2006-09-13. Prior to that date, only the   
+                    year was recorded.
+            </div>
+            <input type="text" name="Earliest Approval Date" title="from date: MM-DD-YYYY" placeholder="earliest" 
+                   pattern="^(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])-(19|20)[0-9][0-9]$" value="{{ criteria['Earliest Approval Date'] }}">
+            to
+            <input type="text" name="Latest Approval Date" title="to date: MM-DD-YYYY" placeholder="latest"
+                   pattern="^(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])-(19|20)[0-9][0-9]$" value="{{ criteria['Latest Approval Date'] }}">
+            <span class="note">MM-DD-YYYY</span>
         </td>
       </tr>
+
+      <tr><td></td></tr>
 
       <tr><!------------------------- CONTINENT ----------------------------->
           <td><strong><label for="continent">Continent:</label></strong></td>
           <td>
-            <select name="continent" id="continent">
+            <select name="Continent" id="continent">
               <option value="">All</option>
               {% for continent in continents %}
-                <option value="{{continent.continent_name}}">{{continent.continent_name}}</option>
+                <option value="{{ continent.continent_id }}_{{ continent.continent_name }}" 
+                  {% if continent.continent_id ~ '_' ~ continent.continent_name == criteria['Continent'] %} 
+                    selected {% endif %}>
+                  {{ continent.continent_name }}
+                </option>
               {% endfor %}
             </select>
           </td>
       </tr>
 
+      <tr>
+        <td></td>
+        <td style="padding: 0 5px;"><b>or</b></td>
+      </tr>
+
       <tr><!------------------------- ETHNICITY ----------------------------->
-        <td><strong><label for="ethnicity">Ethnicity/Cultural Group or Country:</label></strong></td>
+        <td><strong><label for="ethnicity">Ethnicity/Cultural Group:</label></strong></td>
         <td>
-          <select name="ethnicity" id="ethnicity">
+          <select name="Ethnicity" id="ethnicity">
             <option value="">All</option>
             {% for continent in continents %}
               {% for ethnicity in continent.ethnicities %}
-                <option value="ethnicity.ethnicity_name}}">{{continent.continent_code}} - {{ethnicity.ethnicity_name}}</option>
+                <option value="{{ continent.continent_code }}{{ ethnicity.ethnicity_name }}"
+                  {% if continent.continent_code ~ ethnicity.ethnicity_name == criteria['Ethnicity'] %} 
+                    selected {% endif %}>
+                  {{ continent.continent_code }} - {{ ethnicity.ethnicity_name }}
+                </option>
               {% endfor %}
             {% endfor %}
           </select>
         </td>
       </tr>
 
+      <tr><td></td></tr>
+
       <tr><!------------------------- REFERENCE ----------------------------->
         <td><strong><label for="reference">Reference:</label></strong></td>
         <td colspan="3">
-          <select name="reference" style="width: 450px;">
+          <select name="Reference" id="reference">
             <option value="">All</option>
               {% for feature_reference in feature_references %}
-                <option value="feature_reference.name}}">[{{feature_reference.feature_reference_id}}] {{feature_reference.name}}</option>
+                <option value="{{ feature_reference.feature_reference_id }}_{{ feature_reference.name }}"
+                  {% if feature_reference.feature_reference_id ~ '_' ~ feature_reference.name == criteria['Reference'] %} 
+                    selected {% endif %}>
+                  [{{ feature_reference.feature_reference_id }}] {{ feature_reference.name }}
+                </option>
               {% endfor %}
           </select>
         </td>
       </tr>
-
-      <tr><!------------------------- COLUMN FILTER ------------------------->
-        <td><strong>Columns to include:</strong></td>
-        <td>    
-          <ul>
-            <li><input type="checkbox" name="featureIDColumn"             />  Feature ID          </li>
-            <li><input type="checkbox" name="featureNameColumn"    checked/>  Feature Name        </li>
-            <li><input type="checkbox" name="cleanFeatNameColumn"         />  Clean Feature Name  </li>
-            <li><input type="checkbox" name="targetColumn"         checked/>  Target              </li>
-            <li><input type="checkbox" name="diameterColumn"       checked/>  Diameter            </li>
-            <li><input type="checkbox" name="centerLatLonColumn"   checked/>  Center Lat/Lon      </li>
-            <li><input type="checkbox" name="latLonColumn"                />  Lat/Lon Boundaries  </li>
-            <li><input type="checkbox" name="coordSystemColumn"    checked/>  Coordinate System   </li>
-            <li><input type="checkbox" name="contEthColumn"               />  Continent/Ethnicity </li>
-            <li><input type="checkbox" name="featureTypeColumn"           />  Feature Type        </li>
-            <li><input type="checkbox" name="featureTypeCodeColumn"       />  Feature Type Code   </li>
-            <li><input type="checkbox" name="quadColumn"                  />  Quad                </li>
-            <li><input type="checkbox" name="approvalStatusColumn" checked/>  Approval Status     </li>
-            <li><input type="checkbox" name="approvalDateColumn"   checked/>  Approval Date       </li>
-            <li><input type="checkbox" name="referenceColumn"             />  Reference           </li>
-            <li><input type="checkbox" name="originColumn"         checked/>  Origin              </li>
-            <li><input type="checkbox" name="additionalInfoColumn"        />  Additional Info     </li>
-            <li><input type="checkbox" name="lastUpdatedColumn"           />  Last Updated        </li>
-          </ul>
-        </td>
-      </tr>
-      
-      <tr><!------------------------- SORT BY ------------------------------->
-        <td><strong><label for="sort_column">Sorted by:</label></strong></td>
-        <td>
-          <select name="sort_column">
-            <option value="name"              > Feature Name    </option>
-            <option value="feature_id"        > Feature ID      </option>
-            <option value="diameter"          > Diameter        </option>
-            <option value="ethincity"         > Ethnicity       </option>
-            <option value="featureType"       > Feature Type    </option>
-            <option value="quad"              > Quad            </option>
-            <option value="ApprovalStatus"    > Approval Status </option>
-            <option value="ApprovalDate"      > Approval Date   </option>
-            <option value="Reference"         > Reference       </option>
-            <option value="feature_updated_on"> Last Updated    </option>
-          </select>
-        
-          <select name="sort_asc" title="sorting">
-            <option value="true" >  Ascending   </option>
-            <option value="false">  Descending  </option>
-          </select>
-        </td>
-      </tr>
-
-      <tr><!------------------------- OUTPUT FORMAT ------------------------->
-        <td><strong><label for="displayType">Output Format:</label></strong></td>
-        <td>
-          <select name="displayType" id="displayType">
-            <option value="HTML"> HTML - webpage                                                      </option>
-            <option value="CSV" > CSV - (Comma Separated Values) for importing into Excel             </option>
-            <option value="TSV" > TSV - (Tab Separated Values) for importing into other Spread Sheets </option>
-            <option value="XML" > XML - Useful for application development                            </option>
-            <option value="KML" > KML - For importing into GoogleEarth                                </option>
-          </select>
-          <br/>
-          <a href="Page/Website#downloads">Diacritic characters not displaying correctly?</a><hr/>
-          <p>Note: <i>The KML option only uses the -180 to 180, positive east, planetocentric coordinate system.</i></p>
-        </td>
-      </tr>
-
-      <tr>
-        <td style="padding-left: 20px">
-          <button type="submit" name="Search" value="Search" class="submit_button">Search</button>
-        </td>
-        <td></td>
-      </tr>
-
     </table>
+    <button type="button" name="clear" class="clear">Clear</button>
+    <button type="submit" name="advanced_submit" class="submit_button">Search</button>
   </form>
 
+  <script>
+  $(document).ready( function() {
+
+    toggle_latlong();
+
+    $('#system').on('change', function() {
+      $('#target').val("");
+    });
+
+    $('#target').on('change', function() {
+      $('#system').val("");
+      toggle_latlong();
+    });
+
+    $('#continent').on('change', function() {
+      $('#ethnicity').val("");
+    });
+
+    $('#ethnicity').on('change', function() {
+      $('#continent').val("");
+    });
+
+    $('form .clear').on('click', function() {
+      $('select, input').each( function() {
+        if ($(this).is('[data-cs]')) {
+          $(this).val($(this).attr('data-default'))
+        } else {
+          $(this).val('');
+        }
+      });
+      toggle_latlong();
+    });
+
+    function toggle_latlong() {
+      if ($('#target').val()) {
+        $('.latlon input').removeAttr('disabled');
+      } else {
+        $('.latlon input').attr('disabled', true).val('');
+      }
+    }
+
+  });
+  
+</script>
+
+
 {% endblock %}
+
+

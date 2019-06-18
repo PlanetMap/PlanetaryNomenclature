@@ -46,12 +46,11 @@
                 <td class="layout" id="layout_glass_top_left"  ><div class="content_spacer"></div></td> <!-- Need to use a div, because IE wont do min-width for a td -->
                 <td class="layout" id="layout_glass_top_center">
                   <div class="search_wrapper">
-                    <form action="/SearchResults" method="post" id="simple_search" name="simple_search" novalidate>
+                    <form action="/SearchResults" method="post" id="simple_search">
                       <div class="simple_search_wrapper" title="Search for Features">
-                        {{ simple_search.hidden_tag() }} <!-- generates a submission token -->
-                        {{ simple_search.feature_name(size=17) }}
-                        {{ simple_search.simple_submit() }}
-                        <!--<img src="{{ url_for('static', filename='images/layout/search_button.png') }}" id="search_button" alt="search"/>-->
+                        <input type="text" id="simple_search_box" name="Feature Name" alt="search for a feature by name" placeholder="Search by Feature Name..." />
+                        <input type="image" id="search_button" src="{{ url_for('static', filename='images/layout/search_button.png') }}" alt="search"  />
+                        <input type="hidden" name="simple_submit" />
                       </div>
                     </form>
                   </div>
@@ -103,7 +102,7 @@
                     </tr>
                     <tr class="layout">
                       <td class="layout" id="layout_content_footer">
-                        <a href="${contextPath}/Page/Contact_Us">Contact Us</a> |
+                        <a href="/Page/Contact_Us">Contact Us</a> |
                         <a target="iau" href="http://iau.org">IAU</a> |
                         <a target="astro" href="http://astrogeology.usgs.gov">USGS Astrogeology Science Center</a> |
                         <a target="nasa" href="http://www.nasa.gov">NASA</a>

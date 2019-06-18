@@ -13,19 +13,22 @@
 {% block body %}
 
   <h3>Nomenclature Search Results</h3>
-  <div id="criteria"> 
-    {% for criterion_name, criterion_value in criteria.items() %}
-      <input name="{{ criterion_name }}" value="{{ criterion_value }}" type="hidden" />
-    {% endfor %}
+  <div id="criteria">
+    <form id="resubmit_criteria" action="/AdvancedSearch" method="post">
+      {% for criterion_name, criterion_label in criteria_labels.items() %}
+        <div>{{ criterion_name }}: <b>{{ criterion_label }}</b>
+          <a><sup class="clear_criterion pointer" data-criterion="{{ criterion_name }}"> [x]</sup></a>
+        </div>
+      {% endfor %}
+      
+      {% for criterion_name, criterion_value in criteria.items() %}
+        <input name="{{ criterion_name }}" value="{{ criterion_value }}" type="hidden" />
+      {% endfor %}
+      <p>Go back and <button type="submit" class="pointer">Refine your Search</button></p>
+    </form>
   </div>
 
-  <p>Go back and <a onClick="$('#form').attr('action','/AdvancedSearch'); 
-                              $('#displayType').val('HTML'); $('#form').submit();" 
-                    class="js_action">Refine your Search
-                  </a>.
-  </p>
-
-  {% if planetographic %}<p><em>All search result latitudes are planetographic</em></p>
+  {% if is_planetographic %}<p><em>All search result latitudes are planetographic</em></p>
   {% else %}<p><em>All search result latitudes are planetocentric</em></p>{% endif %}
 
   {% if results %}
@@ -37,12 +40,12 @@
       <button class="last" alt="last page" title="last page">>></button>
 
       <span class="h3" style="margin-left:50px;">Results Per Page:</span>
-      <select class="pagesize">
-        <option value="25"                    >25</option>
-        <option value="50"           selected >50</option>
-        <option value="100"                   >100</option>
-        <option value="200"                   >200</option>
-        <option value="500"                   >500</option>
+      <select class="pagesize pointer">
+        <option value="25"           >25</option>
+        <option value="50"  selected >50</option>
+        <option value="100"          >100</option>
+        <option value="200"          >200</option>
+        <option value="500"          >500</option>
       </select>
     </span>
 
@@ -283,8 +286,7 @@
 
     $('#csv_output').on('click', function() {
       $('.search_results').trigger('outputTable');
-    })
-
+    });
 
   });
 
@@ -355,6 +357,15 @@
         $('.' +check_box.attr('name')).removeClass('hidden');
       }
     });
+
+    $('.clear_criterion').on('click', function() {
+      var criterion = $(this).attr('data-criterion');
+      var form = $('#resubmit_criteria');
+      $(form).find(`input[name='${criterion}']`).val('');
+      form.attr('action', '/SearchResults');
+      form.submit();
+    });
+
   }
 </script>
 
