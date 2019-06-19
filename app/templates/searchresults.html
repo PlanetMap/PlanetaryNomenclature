@@ -28,8 +28,8 @@
     </form>
   </div>
 
-  {% if is_planetographic %}<p><em>All search result latitudes are planetographic</em></p>
-  {% else %}<p><em>All search result latitudes are planetocentric</em></p>{% endif %}
+  {% if is_planetocentric %}<p><em>All search result latitudes are planetocentric</em></p>
+  {% else %}<p><em>All search result latitudes are planetographic</em></p>{% endif %}
 
   {% if results %}
     <span class="pager">
@@ -124,44 +124,77 @@
 
             <td class="diameterColumn right hidden">{{ feature.diameter|floatformat }}</td>
 
-            <td class="centerLatLonColumn right hidden">{{ feature.center_shape.y|floatformat }}</td>
+            <td class="centerLatLonColumn right hidden">
+              {% if is_planetocentric %}
+                {{ feature.center_shape.y|floatformat }}                
+              {% else %}
+                {{ feature.to_graphic(feature.center_shape.y)|floatformat }}
+              {% endif %}
+            </td>
 
-            <td class="centerLatLonColumn right hidden">{{ feature.center_shape.x|floatformat }}</td>
-            
-            <td class="latLonColumn right hidden"> 
-                {% if feature.northmostlatitude %} 
-                {{ feature.northmostlatitude|floatformat }} 
-                {% else %}
-                -
+            <td class="centerLatLonColumn right hidden">
+              {% set center_longitude = feature.center_shape.x %} 
+                {% if not is_positive_east %}
+                  {% set center_longitude = feature.to_positive_west(center_longitude) %}
                 {% endif %}
+                {% if not is_0_360 %}
+                  {% set center_longitude = feature.to_180(center_longitude) %}
+                {% endif %}
+              {{ center_longitude|floatformat }}
             </td>
             
             <td class="latLonColumn right hidden"> 
-                {% if feature.southmostlatitude %} 
-                {{ feature.southmostlatitude|floatformat }} 
-                {% else %}
+              {% if not feature.northmostlatitude %}
                 -
-                {% endif %}
+              {% elif is_planetocentric %}
+                {{ feature.northmostlatitude|floatformat }}
+              {% else %}
+                {{ feature.to_graphic(feature.northmostlatitude)|floatformat }}                
+              {% endif %}
+            </td>
+            
+            <td class="latLonColumn right hidden"> 
+              {% if not feature.southmostlatitude %}
+                -
+              {% elif is_planetocentric %}
+                {{ feature.southmostlatitude|floatformat }}
+              {% else %}
+                {{ feature.to_graphic(feature.southmostlatitude)|floatformat }}                
+              {% endif %}
             </td>
 
             <td class="latLonColumn right hidden"> 
-                {% if feature.eastmostlongitude %} 
-                {{ feature.eastmostlongitude|floatformat }} 
-                {% else %}
+              {% if not feature.eastmostlongitude %}
                 -
-                {% endif %}
+              {% else %}
+                {% set eastmost_longitude = feature.eastmostlongitude %} 
+                  {% if not is_positive_east %}
+                    {% set eastmost_longitude = feature.to_positive_west(eastmost_longitude) %}
+                  {% endif %}
+                  {% if not is_0_360 %}
+                    {% set eastmost_longitude = feature.to_180(eastmost_longitude) %}
+                  {% endif %}
+                {{ eastmost_longitude|floatformat }}
+              {% endif %}
             </td>
 
             <td class="latLonColumn right hidden"> 
-                {% if feature.westmostlongitude %} 
-                {{ feature.westmostlongitude|floatformat }} 
-                {% else %}
+              {% if not feature.westmostlongitude %}
                 -
-                {% endif %}
+              {% else %}
+                {% set westmost_longitude = feature.westmostlongitude %} 
+                  {% if not is_positive_east %}
+                    {% set westmost_longitude = feature.to_positive_west(westmost_longitude) %}
+                  {% endif %}
+                  {% if not is_0_360 %}
+                    {% set westmost_longitude = feature.to_180(westmost_longitude) %}
+                  {% endif %}
+                {{ westmost_longitude|floatformat }}
+              {% endif %}
             </td>        
 
             <td class="coordSystemColumn center hidden"> 
-                {% if feature.target.targetcoordinates[0].coordinatesystem.is_positive_east %}+E {% else %}+W {% endif %}{% if feature.target.targetcoordinates[0].coordinatesystem.is_0_360 %}(0-360){% else %}(0-180){% endif %}
+                {{ coordinate_system }}
             </td>
             
             <td class="contEthColumn center hidden"> 
@@ -365,8 +398,8 @@
       form.attr('action', '/SearchResults');
       form.submit();
     });
-
   }
+
 </script>
 
 {% endblock %}

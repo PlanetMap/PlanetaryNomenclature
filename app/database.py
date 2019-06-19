@@ -1,3 +1,4 @@
+import math
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 from geoalchemy2 import Geometry
@@ -5,7 +6,7 @@ from geoalchemy2.shape import to_shape
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey, BigInteger, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
 
 db = SQLAlchemy()
@@ -102,7 +103,8 @@ class Feature(Base):
     target              = relationship('Target')
     featurereference    = relationship('FeatureReference')
     approvalstatus      = relationship('ApprovalStatus')
-    parentfeature       = relationship('Feature', remote_side=feature_id, backref='childfeatures')
+    parentfeature       = relationship('Feature', remote_side=feature_id)
+    childfeatures       = relationship('Feature')
 
     @hybrid_property
     def show_year(self):
@@ -334,3 +336,31 @@ class CurrentFeature(Base):
     @hybrid_property
     def geometry_wkt(self):
         return (self.geometry_shape).to_wkt()
+    
+    @hybrid_method
+    def to_graphic(self, latitude):
+        c_axis = self.target.c_axis_radius
+        a_axis = self.target.a_axis_radius
+        if latitude == None:
+            return None
+        try:
+            new_lat = math.radians(latitude)
+            new_lat = math.atan(math.tan(new_lat) * ( c_axis / a_axis ) * ( c_axis / a_axis))
+            latitude = math.degrees(new_lat)
+        except:
+            return latitude
+        return latitude
+
+    @hybrid_method
+    def to_180(self, longitude):
+        if longitude == None:
+            return None
+        if longitude >= 180.0:
+            return longitude - 360.0
+        return longitude
+
+    @hybrid_method
+    def to_positive_west(self, longitude):
+        if longitude == None:
+            return None
+        return 360.0 - longitude

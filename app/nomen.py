@@ -1,3 +1,4 @@
+import math
 from datetime import datetime
 from flask import Flask, Blueprint, render_template, request, Response, redirect, abort
 from jinja2 import Markup
@@ -5,6 +6,30 @@ from database import (db, PagePart, Feature, Target, ApprovalStatus, Continent,
 	Ethnicity, FeatureReference, FeatureType, FeatureGeometry, CurrentFeature, CoordinateSystem)
 
 router = Blueprint('router', __name__, template_folder='templates')
+'''
+def to_positive_west(longitude):
+	if not longitude:
+		return None
+	return 360.0 - longitude
+
+def to_ographic(latitude, a_axis_radius, c_axis_radius):
+	if not latitude:
+		return None
+	try:
+		new_lat = math.radians(latitude)
+		new_lat = math.atan(math.tan(new_lat) * ( c_axis_radius / a_axis_radius ) * ( c_axis_radius / a_axis_radius))
+		latitude = math.degrees(new_lat)
+	except:
+		return latitude
+	return latitude
+
+def to_180(longitude):
+	if not longitude:
+		return None
+	if longitude >= 180.0:
+		return longitude - 360.0
+	return longitude
+'''
 
 def yearformat(value, format='%Y'):
 	return value.strftime(format)
@@ -20,6 +45,7 @@ def floatformat(value):
 
 def page_not_found(e):
 	return render_template('404.html'), 404
+
 
 def create_app(config_mode):
 
@@ -122,26 +148,28 @@ def references():
 
 @router.route('/SearchResults', methods = ['GET', 'POST'])
 def searchresults():
-	planetographic = False
-	filters = []
-	results = []
-	criteria_labels = {}
-	criteria = {}
+	degrees 		  = '(0-360)'
+	direction 		  = '+E '
+	is_planetocentric = True
+	is_0_360 		  =	True
+	is_positive_east  = True
+	
+	filters = results = []
+	criteria = criteria_labels = {}
 
 	try:
 
+		# parse the search request
 		if request.method == 'POST' and request.form:
 			# feature name is in both POST types
 			if request.form.get('Feature Name'):
-				value = request.form.get('Feature Name')
-				criteria_labels['Feature Name'] = value
+				value = criteria_labels['Feature Name'] = request.form.get('Feature Name')
 				filters.append(CurrentFeature.name.ilike(r'%{}%'.format(value)))
 				
 			# if an advanced search, add filters
 			if 'advanced_submit' in request.form:
 				if request.form.get('System'):
-					value = request.form.get('System')
-					criteria_labels['System'] = value
+					value = criteria_labels['System'] = request.form.get('System')
 					filters.append(Target.system.ilike(value))
 				if request.form.get('Target'):
 					value, criteria_labels['Target'] = request.form.get('Target').split('_')
@@ -152,6 +180,18 @@ def searchresults():
 				if request.form.get('Approval Status'):
 					value, criteria_labels['Approval Status'] = request.form.get('Approval Status').split('_')
 					filters.append(CurrentFeature.approval_status_id == value)
+				if request.form.get('Southernmost Latitude'):
+					criteria_labels['Southernmost Latitude'] = request.form.get('Southernmost Latitude')
+					filters.append(CurrentFeature.southernmostlatitude >= request.form.get('Southernmost Latitude', type=float))
+				if request.form.get('Northernmost Latitude'):
+					criteria_labels['Northernmost Latitude'] = request.form.get('Northernmost Latitude')
+					filters.append(CurrentFeature.northernmostlatitude <= request.form.get('Southernmost Latitude', type=float))
+				if request.form.get('Westernmost Longitude'):
+					criteria_labels['Westernmost Longitude'] = request.form.get('Westernmost Longitude')
+					filters.append(CurrentFeature.westernmostlongitude <= request.form.get('Westernmost Longitude', type=float))
+				if request.form.get('Easternmost Longitude'):
+					criteria_labels['Easternmost Longitude'] = request.form.get('Easternmost Longitude')
+					filters.append(CurrentFeature.easternmostlongitude <= request.form.get('Easternmost Longitude', type=float))				
 				if request.form.get('Minimum Feature Diameter'):
 					criteria_labels['Minimum Feature Diameter'] = request.form.get('Minimum Feature Diameter')
 					filters.append(CurrentFeature.diameter >= request.form.get('Minimum Feature Diameter', type=float))
@@ -178,6 +218,15 @@ def searchresults():
 				if request.form.get('Reference'):
 					value, criteria_labels['Reference'] = request.form.get('Reference').split('_')
 					filters.append(CurrentFeature.feature_reference_id == value)
+				
+				if request.form.get('Planetocentric') == 'false':
+					is_planetocentric = False
+				if request.form.get('0-360') == 'false':
+					is_0_360 = False
+					degrees = '(0-180)'
+				if request.form.get('Positive East') == 'false':
+					is_positive_east = False
+					direction = '+W '
 
 			criteria = request.form.to_dict()
 
@@ -187,7 +236,7 @@ def searchresults():
 
 			if request.args.get('Feature Type'):
 				value, criteria_labels['Feature Type'] = request.args.get('Feature Type').split('_')
-				filters.append(CurrentFeature.target_id == value)
+				filters.append(CurrentFeature.feature_type_id == value)
 			
 			criteria = request.args.to_dict()
 
@@ -197,15 +246,18 @@ def searchresults():
 	except:
 		abort(404)
 	
+	# get search results and project
 	if filters:
-		results = CurrentFeature.get_many([Target, Ethnicity], filters, [CurrentFeature.name])	
+		results = CurrentFeature.get_many([Target, Ethnicity], filters, [CurrentFeature.name])
 		# if one result, redirect to feature page	
 		if len(results) == 1:
 			return redirect('/Feature/{0}'.format(results[0].name))
 	else:
 		results = CurrentFeature.get_all([CurrentFeature.name])
-
-	return render_template('searchresults.html', planetographic = planetographic,
+	return render_template('searchresults.html', is_planetocentric = is_planetocentric,
+												 is_0_360 = is_0_360,
+												 is_positive_east = is_positive_east,
+												 coordinate_system = direction + degrees,
 												 criteria = criteria,
 												 criteria_labels = criteria_labels,
 												 results = results)
