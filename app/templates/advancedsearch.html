@@ -61,20 +61,20 @@
       <tr><!------------------------- COORDINATE SYSTEM --------------------->
         <td><strong>Coordinate System:</strong></td>
         <td>
-          <select name="Positive East" id="is_positive_east" title="coordinate system direction" 
-                  data-cs="true" data-default="true">
-            <option value="true">+East</option>
-            <option value="false" {% if criteria['Positive East'] == 'false' %} selected {% endif %}>+West</option>
+          <select name="Positive West Direction" title="coordinate system direction" 
+                  data-cs="true" data-default="false">
+            <option value="false">+East</option>
+            <option value="true" {% if criteria['Positive West Direction'] == 'true' %} selected {% endif %}>+West</option>
           </select>
-          <select name="0-360" id="is_0_360" title="coordinate system degrees" 
-                  data-cs="true" data-default="true">
-            <option value="true">0 - 360</option>
-            <option value="false" {% if criteria['0-360'] == 'false' %} selected {% endif %}>(-180) - 180</option>
+          <select name="-180 to 180 Degrees" title="coordinate system degrees" 
+                  data-cs="true" data-default="false">
+            <option value="false">0 - 360</option>
+            <option value="true" {% if criteria['-180 to 180 Degrees'] == 'true' %} selected {% endif %}>(-180) - 180</option>
           </select>
-          <select name="Planetocentric" id="is_planetocentric" title="coordinate system latitudes" 
-                  data-cs="true" data-default="true">
-            <option value="true">Planetocentric</option>
-            <option value="false" {% if criteria['Planetocentric'] == 'false' %} selected {% endif %}>Planetographic</option>
+          <select name="Planetographic Latitudes" title="coordinate system latitudes" 
+                  data-cs="true" data-default="false">
+            <option value="false">Planetocentric</option>
+            <option value="true" {% if criteria['Planetographic Latitudes'] == 'true' %} selected {% endif %}>Planetographic</option>
           </select>
           <a href="Page/Website_coordinatesystems" title="need help with coordinate systems?" target="_new">not sure?</a>
         </td>
@@ -166,10 +166,10 @@
                     year was recorded.
             </div>
             <input type="text" name="Earliest Approval Date" title="from date: MM-DD-YYYY" placeholder="earliest" 
-                   pattern="^(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])-(19|20)[0-9][0-9]$" value="{{ criteria['Earliest Approval Date'] }}">
+                   pattern="^(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])-(19|20)[0-9][0-9]$" value="{{ criteria['Beginning Approval Date'] }}">
             to
             <input type="text" name="Latest Approval Date" title="to date: MM-DD-YYYY" placeholder="latest"
-                   pattern="^(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])-(19|20)[0-9][0-9]$" value="{{ criteria['Latest Approval Date'] }}">
+                   pattern="^(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])-(19|20)[0-9][0-9]$" value="{{ criteria['Ending Approval Date'] }}">
             <span class="note">MM-DD-YYYY</span>
         </td>
       </tr>

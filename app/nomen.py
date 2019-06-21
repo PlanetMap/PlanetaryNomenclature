@@ -6,30 +6,6 @@ from database import (db, PagePart, Feature, Target, ApprovalStatus, Continent,
 	Ethnicity, FeatureReference, FeatureType, FeatureGeometry, CurrentFeature, CoordinateSystem)
 
 router = Blueprint('router', __name__, template_folder='templates')
-'''
-def to_positive_west(longitude):
-	if not longitude:
-		return None
-	return 360.0 - longitude
-
-def to_ographic(latitude, a_axis_radius, c_axis_radius):
-	if not latitude:
-		return None
-	try:
-		new_lat = math.radians(latitude)
-		new_lat = math.atan(math.tan(new_lat) * ( c_axis_radius / a_axis_radius ) * ( c_axis_radius / a_axis_radius))
-		latitude = math.degrees(new_lat)
-	except:
-		return latitude
-	return latitude
-
-def to_180(longitude):
-	if not longitude:
-		return None
-	if longitude >= 180.0:
-		return longitude - 360.0
-	return longitude
-'''
 
 def yearformat(value, format='%Y'):
 	return value.strftime(format)
@@ -45,7 +21,6 @@ def floatformat(value):
 
 def page_not_found(e):
 	return render_template('404.html'), 404
-
 
 def create_app(config_mode):
 
@@ -150,9 +125,9 @@ def references():
 def searchresults():
 	degrees 		  = '(0-360)'
 	direction 		  = '+E '
-	is_planetocentric = True
-	is_0_360 		  =	True
-	is_positive_east  = True
+	is_planetographic = False
+	is_180			  =	False
+	is_positive_west  = False
 	
 	filters = results = []
 	criteria = criteria_labels = {}
@@ -160,77 +135,75 @@ def searchresults():
 	try:
 
 		# parse the search request
-		if request.method == 'POST' and request.form:
-			# feature name is in both POST types
+		if request.method == 'POST':
 			if request.form.get('Feature Name'):
 				value = criteria_labels['Feature Name'] = request.form.get('Feature Name')
 				filters.append(CurrentFeature.name.ilike(r'%{}%'.format(value)))
-				
-			# if an advanced search, add filters
-			if 'advanced_submit' in request.form:
-				if request.form.get('System'):
-					value = criteria_labels['System'] = request.form.get('System')
-					filters.append(Target.system.ilike(value))
-				if request.form.get('Target'):
-					value, criteria_labels['Target'] = request.form.get('Target').split('_')
-					filters.append(CurrentFeature.target_id == value)
-				if request.form.get('Feature Type'):
-					value, criteria_labels['Feature Type'] = request.form.get('Feature Type').split('_')
-					filters.append(CurrentFeature.feature_type_id == value)
-				if request.form.get('Approval Status'):
-					value, criteria_labels['Approval Status'] = request.form.get('Approval Status').split('_')
-					filters.append(CurrentFeature.approval_status_id == value)
-				if request.form.get('Southernmost Latitude'):
-					criteria_labels['Southernmost Latitude'] = request.form.get('Southernmost Latitude')
-					filters.append(CurrentFeature.southernmostlatitude >= request.form.get('Southernmost Latitude', type=float))
-				if request.form.get('Northernmost Latitude'):
-					criteria_labels['Northernmost Latitude'] = request.form.get('Northernmost Latitude')
-					filters.append(CurrentFeature.northernmostlatitude <= request.form.get('Southernmost Latitude', type=float))
-				if request.form.get('Westernmost Longitude'):
-					criteria_labels['Westernmost Longitude'] = request.form.get('Westernmost Longitude')
-					filters.append(CurrentFeature.westernmostlongitude <= request.form.get('Westernmost Longitude', type=float))
-				if request.form.get('Easternmost Longitude'):
-					criteria_labels['Easternmost Longitude'] = request.form.get('Easternmost Longitude')
-					filters.append(CurrentFeature.easternmostlongitude <= request.form.get('Easternmost Longitude', type=float))				
-				if request.form.get('Minimum Feature Diameter'):
-					criteria_labels['Minimum Feature Diameter'] = request.form.get('Minimum Feature Diameter')
-					filters.append(CurrentFeature.diameter >= request.form.get('Minimum Feature Diameter', type=float))
-				if request.form.get('Maximum Feature Diameter'):
-					criteria_labels['Maximum Feature Diameter'] = request.form.get('Maximum Feature Diameter')
-					filters.append(CurrentFeature.diameter <= request.form.get('Maximum Feature Diameter', type=float))
-				if request.form.get('Earliest Approval Date'):
-					label = request.form.get('Earliest Approval Date')
-					value = datetime.strptime(label, '%m-%d-%Y')
-					criteria_labels['Earliest Approval Date'] = label
-					filters.append(CurrentFeature.approval_date >= value)
-				if request.form.get('Latest Approval Date'):
-					label = request.form.get('Latest Approval Date')
-					value = datetime.strptime(label, '%m-%d-%Y')
-					criteria_labels['Latest Approval Date'] = label
-					filters.append(CurrentFeature.approval_date <= value)
-				if request.form.get('Continent'):
-					value, criteria_labels['Continent'] = request.form.get('Continent').split('_')
-					filters.append(Ethnicity.continent_id == value)
-				if request.form.get('Ethnicity'):
-					value = request.form.get('Ethnicity')
-					criteria_labels['Ethnicity'] = value[2:]
-					filters.append(CurrentFeature.ct_ethnicity == value)
-				if request.form.get('Reference'):
-					value, criteria_labels['Reference'] = request.form.get('Reference').split('_')
-					filters.append(CurrentFeature.feature_reference_id == value)
-				
-				if request.form.get('Planetocentric') == 'false':
-					is_planetocentric = False
-				if request.form.get('0-360') == 'false':
-					is_0_360 = False
-					degrees = '(0-180)'
-				if request.form.get('Positive East') == 'false':
-					is_positive_east = False
-					direction = '+W '
+			if request.form.get('System'):
+				value = criteria_labels['System'] = request.form.get('System')
+				filters.append(Target.system.ilike(value))
+			if request.form.get('Target'):
+				value, criteria_labels['Target'] = request.form.get('Target').split('_')
+				filters.append(CurrentFeature.target_id == value)
+			if request.form.get('Feature Type'):
+				value, criteria_labels['Feature Type'] = request.form.get('Feature Type').split('_')
+				filters.append(CurrentFeature.feature_type_id == value)
+			if request.form.get('Approval Status'):
+				value, criteria_labels['Approval Status'] = request.form.get('Approval Status').split('_')
+				filters.append(CurrentFeature.approval_status_id == value)
+			if request.form.get('Southernmost Latitude'):
+				criteria_labels['Southernmost Latitude'] = request.form.get('Southernmost Latitude')
+				filters.append(CurrentFeature.southernmostlatitude >= request.form.get('Southernmost Latitude', type=float))
+			if request.form.get('Northernmost Latitude'):
+				criteria_labels['Northernmost Latitude'] = request.form.get('Northernmost Latitude')
+				filters.append(CurrentFeature.northernmostlatitude <= request.form.get('Southernmost Latitude', type=float))
+			if request.form.get('Westernmost Longitude'):
+				criteria_labels['Westernmost Longitude'] = request.form.get('Westernmost Longitude')
+				filters.append(CurrentFeature.westernmostlongitude <= request.form.get('Westernmost Longitude', type=float))
+			if request.form.get('Easternmost Longitude'):
+				criteria_labels['Easternmost Longitude'] = request.form.get('Easternmost Longitude')
+				filters.append(CurrentFeature.easternmostlongitude <= request.form.get('Easternmost Longitude', type=float))				
+			if request.form.get('Minimum Feature Diameter'):
+				criteria_labels['Minimum Feature Diameter'] = request.form.get('Minimum Feature Diameter')
+				filters.append(CurrentFeature.diameter >= request.form.get('Minimum Feature Diameter', type=float))
+			if request.form.get('Maximum Feature Diameter'):
+				criteria_labels['Maximum Feature Diameter'] = request.form.get('Maximum Feature Diameter')
+				filters.append(CurrentFeature.diameter <= request.form.get('Maximum Feature Diameter', type=float))
+			if request.form.get('Beginning Approval Date'):
+				label = request.form.get('Beginning Approval Date')
+				value = datetime.strptime(label, '%m-%d-%Y')
+				criteria_labels['Beginning Approval Date'] = label
+				filters.append(CurrentFeature.approval_date >= value)
+			if request.form.get('Ending Approval Date'):
+				label = request.form.get('Ending Approval Date')
+				value = datetime.strptime(label, '%m-%d-%Y')
+				criteria_labels['Ending Approval Date'] = label
+				filters.append(CurrentFeature.approval_date <= value)
+			if request.form.get('Continent'):
+				value, criteria_labels['Continent'] = request.form.get('Continent').split('_')
+				filters.append(Ethnicity.continent_id == value)
+			if request.form.get('Ethnicity'):
+				value = request.form.get('Ethnicity')
+				criteria_labels['Ethnicity'] = value[2:]
+				filters.append(CurrentFeature.ct_ethnicity == value)
+			if request.form.get('Reference'):
+				value, criteria_labels['Reference'] = request.form.get('Reference').split('_')
+				filters.append(CurrentFeature.feature_reference_id == value)
+			if request.form.get('Planetographic Latitudes') == 'true':
+				is_planetographic = True
+				criteria_labels['Planetographic Latitudes'] = 'True'
+			if request.form.get('-180 to 180 Degrees') == 'true':
+				is_180 = True
+				degrees = '(0-180)'
+				criteria_labels['-180 to 180 Degrees'] = 'True'
+			if request.form.get('Positive West Direction') == 'true':
+				is_positive_west = True
+				direction = '+W '
+				criteria_labels['Positive West Direction'] = 'True'
 
 			criteria = request.form.to_dict()
 
-		elif request.method == 'GET' and request.args.get('Target'):
+		if request.method == 'GET':
 			value, criteria_labels['Target'] = request.args.get('Target').split('_')
 			filters.append(CurrentFeature.target_id == value)
 
@@ -239,9 +212,6 @@ def searchresults():
 				filters.append(CurrentFeature.feature_type_id == value)
 			
 			criteria = request.args.to_dict()
-
-		else:
-			abort(404)
 	
 	except:
 		abort(404)
@@ -254,9 +224,9 @@ def searchresults():
 			return redirect('/Feature/{0}'.format(results[0].name))
 	else:
 		results = CurrentFeature.get_all([CurrentFeature.name])
-	return render_template('searchresults.html', is_planetocentric = is_planetocentric,
-												 is_0_360 = is_0_360,
-												 is_positive_east = is_positive_east,
+	return render_template('searchresults.html', is_planetographic = is_planetographic,
+												 is_180 = is_180,
+												 is_positive_west = is_positive_west,
 												 coordinate_system = direction + degrees,
 												 criteria = criteria,
 												 criteria_labels = criteria_labels,
