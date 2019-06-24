@@ -572,9 +572,35 @@ div.decending:hover, div.asending:hover {
   cursor: pointer;
 }
 
-table.advanced_search tbody tr td {
+.advanced_search > tbody > tr > td {
+  padding: 8px 2px;
+}
+
+.advanced_search input {
+  width: 185px;
+  max-width: 185px;
   padding: 2px;
 }
+.advanced_search select {
+  width: 195px;
+  max-width: 195px;
+  padding: 2px;
+}
+.advanced_search .note {
+  font-style: italic;
+  margin-bottom: 4px;
+}
+.advanced_search .mute {
+  color: #555;
+  margin-top: 2px;
+  display: block;
+}
+
+.advanced_search input::placeholder {
+  font-style: italic;
+  font-size: .75rem;
+}
+
 td.align_top {
   vertical-align: top;
 }
@@ -587,6 +613,7 @@ sup a:hover, a.js_action:hover {
   text-decoration: underline;
   cursor:       pointer;
 }
+
 tr.deprecated td, tr.deprecated td a, span.deprecated {
   color: #7F93A7;
   font-style: italic;
@@ -706,4 +733,8 @@ div.olControlPanel {
 
 .hidden {
   display: none;
+}
+
+.pointer {
+  cursor: pointer;
 }

@@ -13,20 +13,20 @@
 {% block body %}
 
   <h3>Nomenclature Search Results</h3>
-  <div id="criteria"> 
-    {% for criterion_name, criterion_value in criteria.items() %}
-      <input name="{{ criterion_name }}" value="{{ criterion_value }}" type="hidden" />
-    {% endfor %}
+  <div id="criteria">
+    <form id="resubmit_criteria" action="/AdvancedSearch" method="post">
+      {% for criterion_name, criterion_label in criteria_labels.items() %}
+        <div>{{ criterion_name }}: <b>{{ criterion_label }}</b>
+          <a><sup class="clear_criterion pointer" data-criterion="{{ criterion_name }}"> [x]</sup></a>
+        </div>
+      {% endfor %}
+      
+      {% for criterion_name, criterion_value in criteria.items() %}
+        <input name="{{ criterion_name }}" value="{{ criterion_value }}" type="hidden" />
+      {% endfor %}
+      <p>Go back and <button type="submit" class="pointer form_anchor">Refine your Search</button></p>
+    </form>
   </div>
-
-  <p>Go back and <a onClick="$('#form').attr('action','/AdvancedSearch'); 
-                              $('#displayType').val('HTML'); $('#form').submit();" 
-                    class="js_action">Refine your Search
-                  </a>.
-  </p>
-
-  {% if planetographic %}<p><em>All search result latitudes are planetographic</em></p>
-  {% else %}<p><em>All search result latitudes are planetocentric</em></p>{% endif %}
 
   {% if results %}
     <span class="pager">
@@ -37,12 +37,12 @@
       <button class="last" alt="last page" title="last page">>></button>
 
       <span class="h3" style="margin-left:50px;">Results Per Page:</span>
-      <select class="pagesize">
-        <option value="25"                    >25</option>
-        <option value="50"           selected >50</option>
-        <option value="100"                   >100</option>
-        <option value="200"                   >200</option>
-        <option value="500"                   >500</option>
+      <select class="pagesize pointer">
+        <option value="25"           >25</option>
+        <option value="50"  selected >50</option>
+        <option value="100"          >100</option>
+        <option value="200"          >200</option>
+        <option value="500"          >500</option>
       </select>
     </span>
 
@@ -121,44 +121,78 @@
 
             <td class="diameterColumn right hidden">{{ feature.diameter|floatformat }}</td>
 
-            <td class="centerLatLonColumn right hidden">{{ feature.center_shape.y|floatformat }}</td>
+            <td class="centerLatLonColumn right hidden">
+              {% set center_lat = (feature.to_shape(feature.center_point)).y %}
+              {% if is_planetographic %}                
+                {{ feature.to_graphic(center_lat)|floatformat }}               
+              {% else %}
+                {{ center_lat|floatformat }} 
+              {% endif %}
+            </td>
 
-            <td class="centerLatLonColumn right hidden">{{ feature.center_shape.x|floatformat }}</td>
-            
-            <td class="latLonColumn right hidden"> 
-                {% if feature.northmostlatitude %} 
-                {{ feature.northmostlatitude|floatformat }} 
-                {% else %}
-                -
+            <td class="centerLatLonColumn right hidden">
+              {% set center_long = (feature.to_shape(feature.center_point)).x %} 
+                {% if is_positive_west %}
+                  {% set center_long= feature.to_positive_west(center_long) %}
                 {% endif %}
+                {% if is_180 %}
+                  {% set center_long= feature.to_180(center_long) %}
+                {% endif %}
+              {{ center_long|floatformat }}
             </td>
             
             <td class="latLonColumn right hidden"> 
-                {% if feature.southmostlatitude %} 
-                {{ feature.southmostlatitude|floatformat }} 
-                {% else %}
+              {% if not feature.northmostlatitude %}
                 -
-                {% endif %}
+              {% elif is_planetographic %}
+                {{ feature.to_graphic(feature.northmostlatitude)|floatformat }} 
+              {% else %}
+                {{ feature.northmostlatitude|floatformat }}                              
+              {% endif %}
+            </td>
+            
+            <td class="latLonColumn right hidden"> 
+              {% if not feature.southmostlatitude %}
+                -
+              {% elif is_planetographic %}
+                {{ feature.to_graphic(feature.southmostlatitude)|floatformat }}   
+              {% else %}
+                {{ feature.southmostlatitude|floatformat }}             
+              {% endif %}
             </td>
 
             <td class="latLonColumn right hidden"> 
-                {% if feature.eastmostlongitude %} 
-                {{ feature.eastmostlongitude|floatformat }} 
-                {% else %}
+              {% if not feature.eastmostlongitude %}
                 -
-                {% endif %}
+              {% else %}
+                {% set eastmost_longitude = feature.eastmostlongitude %} 
+                  {% if is_positive_west %}
+                    {% set eastmost_longitude = feature.to_positive_west(eastmost_longitude) %}
+                  {% endif %}
+                  {% if is_180 %}
+                    {% set eastmost_longitude = feature.to_180(eastmost_longitude) %}
+                  {% endif %}
+                {{ eastmost_longitude|floatformat }}
+              {% endif %}
             </td>
 
             <td class="latLonColumn right hidden"> 
-                {% if feature.westmostlongitude %} 
-                {{ feature.westmostlongitude|floatformat }} 
-                {% else %}
+              {% if not feature.westmostlongitude %}
                 -
-                {% endif %}
+              {% else %}
+                {% set westmost_longitude = feature.westmostlongitude %} 
+                  {% if is_positive_west %}
+                    {% set westmost_longitude = feature.to_positive_west(westmost_longitude) %}
+                  {% endif %}
+                  {% if is_180 %}
+                    {% set westmost_longitude = feature.to_180(westmost_longitude) %}
+                  {% endif %}
+                {{ westmost_longitude|floatformat }}
+              {% endif %}
             </td>        
 
             <td class="coordSystemColumn center hidden"> 
-                {% if feature.target.targetcoordinates[0].coordinatesystem.is_positive_east %}+E {% else %}+W {% endif %}{% if feature.target.targetcoordinates[0].coordinatesystem.is_0_360 %}(0-360){% else %}(0-180){% endif %}
+                {{ coordinate_system }}
             </td>
             
             <td class="contEthColumn center hidden"> 
@@ -239,7 +273,7 @@
 
 <script>
   
-  $(document).ready(function(){
+  $(window).on('load', function() {
     updateColumns();
 
     $(".search_results")
@@ -283,8 +317,7 @@
 
     $('#csv_output').on('click', function() {
       $('.search_results').trigger('outputTable');
-    })
-
+    });
 
   });
 
@@ -355,7 +388,16 @@
         $('.' +check_box.attr('name')).removeClass('hidden');
       }
     });
+
+    $('.clear_criterion').on('click', function() {
+      var criterion = $(this).attr('data-criterion');
+      var form = $('#resubmit_criteria');
+      $(form).find(`input[name='${criterion}']`).val('');
+      form.attr('action', '/SearchResults');
+      form.submit();
+    });
   }
+
 </script>
 
 {% endblock %}

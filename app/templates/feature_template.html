@@ -12,7 +12,7 @@
   {% endif %}
 {% endblock %}
 
-{% block title %}{{ feature.featuretype.name }}: {{ feature.name }} on {{ feature.target.name|capitalize }}{% endblock %}
+{% block title %}{{ feature.featuretype.name }}: {{ feature.name }} on {{ feature.target.name|title }}{% endblock %}
 
 {% block body %}
   <table class="feature_detail">
@@ -99,7 +99,7 @@
           <th>Northernmost Latitude</th>
           <td>
             {% if feature_geometry.northmostlatitude %}
-              {{ "{0:0.2f}".format(feature_geometry.northmostlatitude) }} &deg;
+              {{ feature_geometry.northmostlatitude|floatformat }} &deg;
             {% endif %}
           </td>
         </tr>
@@ -107,7 +107,7 @@
           <th>Southernmost Latitude</th>
           <td>
             {% if feature_geometry.southmostlatitude %}
-              {{ "{0:0.2f}".format(feature_geometry.southmostlatitude) }} &deg;
+              {{ feature_geometry.southmostlatitude|floatformat }} &deg;
             {% endif %}
           </td>
         </tr>
@@ -115,7 +115,7 @@
           <th>Easternmost Longitude</th>
           <td>
             {% if feature_geometry.eastmostlongitude %}
-              {{ "{0:0.2f}".format(feature_geometry.eastmostlongitude) }} &deg;
+              {{ feature_geometry.eastmostlongitude|floatformat }} &deg;
             {% endif %}
           </td>
         </tr>
@@ -123,21 +123,22 @@
           <th>Westernmost Longitude</th>
           <td>
             {% if feature_geometry.westmostlongitude %}
-              {{ "{0:0.2f}".format(feature_geometry.westmostlongitude) }} &deg;
+              {{ feature_geometry.westmostlongitude|floatformat }} &deg;
             {% endif %}
           </td>
         </tr>
         <tr class="geom {{ feature_geometry.feature_geometry_id }}">
           <th>Diameter</th>
-          <td>{{ "{0:0.2f}".format(feature_geometry.diameter) }}<span class="units">km</span></td>
+          <td>{{ feature_geometry.diameter|floatformat }}<span class="units">km</span></td>
         </tr>
         <tr class="geom {{ feature_geometry.feature_geometry_id }}">
+        {% set center = feature_geometry.to_shape(feature_geometry.center_point) %}
           <th>Center Latitude</th>
-          <td>{{ "{0:0.2f}".format(feature_geometry.center_shape.y) }}  &deg;</td>
+          <td>{{ center.y|floatformat }}  &deg;</td>
         </tr>
         <tr class="geom {{ feature_geometry.feature_geometry_id }}">
           <th>Center Longitude</th>
-          <td>{{ "{0:0.2f}".format(feature_geometry.center_shape.x) }} &deg;</td>
+          <td>{{ center.x|floatformat }} &deg;</td>
         </tr>
       {% endfor %}
        
@@ -149,12 +150,24 @@
 
       <tr>
         <th>Continent</th>
-        <td>{{ feature.ethnicity.continent.continent_name }}</td>
+        <td>
+          {% if feature.ethnicity.continent %}
+            {{ feature.ethnicity.continent.continent_name }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
       </tr>
 
       <tr>
         <th>Ethnic/Cultural<br/>Group or Country</th>
-        <td>{{ feature.ethnicity.ethnicity_name }}</td>
+        <td>
+          {% if feature.ethnicity %}
+            {{ feature.ethnicity.ethnicity_name }}
+          {% else %}
+            -
+          {% endif %}  
+        </td>
       </tr>
 
       <tr>
@@ -190,10 +203,12 @@
       <tr>
         <th>Approval Date</th>
         <td>
-          {% if feature.clean_approvaldate is not none %}
-            {{ feature.clean_approvaldate }}
-          {% else %}
+          {% if not feature.approval_date %}
             -
+          {% elif feature.show_year %}
+            {{ feature.approval_date|yearformat }}
+          {% else %}
+            {{ feature.approval_date|dateformat }}
           {% endif %}
         </td>
       </tr>

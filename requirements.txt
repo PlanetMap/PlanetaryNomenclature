@@ -1,7 +1,9 @@
+gcc
 flask
 flask-sqlalchemy
 flask-wtf
 geoalchemy2
 pytest
 selenium
+setuptools
 psycopg2

@@ -12,10 +12,10 @@
   <div class="feature_types">
     <h3>Search by Feature Types</h3>
     <ul>
-      <li><a href="/SearchResults?target={{ target_name }}">All Features</a></li>
+      <li><a href="/SearchResults?Target={{ target.target_id }}_{{ target.display_name }}">All Features</a></li>
       {% for feature_type in feature_types %}
         <li>
-          <a href="/SearchResults?target={{ target_name }}&featureType={{ feature_type.name }}" title="{{ feature_type.name }}">
+          <a href="/SearchResults?Target={{ target.target_id }}_{{ target.display_name }}&Feature%20Type={{ feature_type.feature_type_id }}_{{ feature_type.name }}" title="{{ feature_type.name }}">
               {{ feature_type.name }}
           </a>
         </li>
@@ -26,7 +26,7 @@
   {{ page_related }}
 
   <script>
-    {{ page_javascript }}
+    {{ page_javascript }} 
   </script>
 
 {% endblock %}
