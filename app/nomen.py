@@ -88,9 +88,9 @@ def feature(input_feature):
 		abort(404)
 
 	if feature and current_feature:
-		related_content = PagePart.get_page("target", feature.target.name).feature_related
-		render_map = feature.target.show_map or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 52)\
-										 	 or (feature.target.target_id == 16 and feature.featuretype.feature_type_id == 9)
+		related_content = PagePart.get_page("target", current_feature.target.name).feature_related
+		render_map = current_feature.target.show_map or (current_feature.target_id == 16 and current_feature.feature_type_id == 52)\
+										 	 		 or (current_feature.target_id == 16 and current_feature.feature_type_id == 9)
 		
 		return render_template('feature_template.html', feature = feature,
 														current_feature = current_feature,
@@ -98,8 +98,6 @@ def feature(input_feature):
 														render_map = render_map)
 	else:
 		abort(404)
-	
-	# TODO: generate KML from primary attributes (MDIM and CS)
 	
 @router.route('/GIS_Downloads', methods = ['GET'])
 def gisdownloads():

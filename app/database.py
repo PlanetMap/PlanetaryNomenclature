@@ -6,7 +6,7 @@ from geoalchemy2.shape import to_shape
 from sqlalchemy import Column, Integer, String, SmallInteger, DateTime, Boolean, ForeignKey, BigInteger, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, REAL
 
 db = SQLAlchemy()
@@ -27,7 +27,45 @@ class Base(db.Model):
     @classmethod
     def get_all(cls, orders=[False]):
         return cls.query.order_by(*orders).all()
-    
+
+class GeometricBase(db.Model):
+    __abstract__ = True
+
+    @classmethod
+    def to_shape(cls, db_geometry):
+        return to_shape(db_geometry)
+
+    @classmethod
+    def to_wkt(cls, db_geometry):
+        return db_geometry.to_shape.to_wkt()
+
+    @classmethod
+    def to_graphic(cls, latitude):
+        if latitude == None:
+            return None
+        try:
+            c_axis = cls.target.c_axis_radius
+            a_axis = cls.target.a_axis_radius
+            new_lat = math.radians(latitude)
+            new_lat = math.atan(math.tan(new_lat) * ( c_axis / a_axis ) * ( c_axis / a_axis))
+            latitude = math.degrees(new_lat)
+        except:
+            return latitude
+        return latitude
+
+    @classmethod
+    def to_180(cls, longitude):
+        if longitude == None:
+            return None
+        if longitude >= 180.0:
+            return longitude - 360.0
+        return longitude
+
+    @classmethod
+    def to_positive_west(cls, longitude):
+        if longitude == None:
+            return None
+        return 360.0 - longitude
 
 class PagePart(Base):
     __tablename__   = 'pages'
@@ -164,7 +202,7 @@ class CoordinateSystem(Base):
     is_positive_east    = Column(Boolean)
     is_0_360            = Column(Boolean)
 
-class FeatureGeometry(db.Model):
+class FeatureGeometry(Base, GeometricBase):
     __tablename__       = 'featuregeometries'
     feature_geometry_id = Column(Integer, primary_key=True, autoincrement=True)
     feature_id          = Column(Integer, ForeignKey('features.feature_id'))
@@ -180,24 +218,7 @@ class FeatureGeometry(db.Model):
     eastmostlongitude   = Column(DOUBLE_PRECISION) 
     westmostlongitude   = Column(DOUBLE_PRECISION)
     feature             = relationship('Feature', back_populates='featuregeometries')
-    #currentfeature      = relationship('CurrentFeature', back_populates='featuregeometry')
     controlnet          = relationship('ControlNet')
-
-    @hybrid_property
-    def center_shape(self):
-        return to_shape(self.center_point)
-
-    @hybrid_property
-    def geometry_shape(self):
-        return to_shape(self.geometry)
-
-    @hybrid_property
-    def center_wkt(self):
-        return (self.center_shape).to_wkt()
-
-    @hybrid_property
-    def geometry_wkt(self):
-        return (self.geometry_shape).to_wkt()
 
 class Ethnicity(Base):
     __tablename__   = 'ethnicities'
@@ -212,7 +233,7 @@ class FeatureReference(Base):
     feature_reference_id    = Column(Integer, primary_key=True, autoincrement=True)
     name                    = Column(String(1024), nullable=False)
 
-class FeatureRequest(Base):
+class FeatureRequest(Base, GeometricBase):
     __tablename__           = 'featurerequests'
     feature_request_id      = Column(Integer, primary_key=True, autoincrement=True)
     requester_name          = Column(String(1024))
@@ -253,7 +274,7 @@ class QuadGroup(Base):
     target_id       = Column(Integer, ForeignKey('targets.target_id'))
     target          = relationship('Target')
 
-class Quad(Base):
+class Quad(Base, GeometricBase):
     __tablename__   = 'quads'
     quad_id         = Column(Integer, primary_key=True, autoincrement=True)
     quad_group_id   = Column(Integer, ForeignKey('quadgroups.quad_group_id'))
@@ -273,7 +294,7 @@ class TargetCoordinate(Base):
     target                  = relationship('Target', back_populates='targetcoordinates')
     coordinatesystem        = relationship('CoordinateSystem')
 
-class CurrentFeature(Base):
+class CurrentFeature(Base, GeometricBase):
     __tablename__           = 'current_features_view'
     feature_id              = Column(Integer, primary_key=True, nullable=False)
     name                    = Column(String(1024))
@@ -282,7 +303,7 @@ class CurrentFeature(Base):
     ethnicity_id            = Column(Integer, ForeignKey('ethnicities.ethnicity_id'))
     ct_ethnicity            = Column(Text)
     feature_type_id         = Column(Integer, ForeignKey('featuretypes.feature_type_id'))
-    parent_id               = Column(Integer)
+    parent_id               = Column(Integer, ForeignKey('current_features_view.feature_id'))
     target_id               = Column(Integer, ForeignKey('targets.target_id'))
     feature_reference_id    = Column(Integer, ForeignKey('featurereferences.feature_reference_id'))
     description             = Column(String(1024))
@@ -310,7 +331,6 @@ class CurrentFeature(Base):
     target                  = relationship('Target')
     featurereference        = relationship('FeatureReference')
     approvalstatus          = relationship('ApprovalStatus')
-    #parentfeature           = relationship('Feature', remote_side=feature_id, backref='childfeatures')
     
     @hybrid_property
     def show_year(self):
@@ -320,47 +340,3 @@ class CurrentFeature(Base):
             return True
         else:
             return False
-
-    @hybrid_property
-    def center_shape(self):
-        return to_shape(self.center_point)
-
-    @hybrid_property
-    def geometry_shape(self):
-        return to_shape(self.geometry)
-
-    @hybrid_property
-    def center_wkt(self):
-        return (self.center_shape).to_wkt()
-
-    @hybrid_property
-    def geometry_wkt(self):
-        return (self.geometry_shape).to_wkt()
-    
-    @hybrid_method
-    def to_graphic(self, latitude):
-        c_axis = self.target.c_axis_radius
-        a_axis = self.target.a_axis_radius
-        if latitude == None:
-            return None
-        try:
-            new_lat = math.radians(latitude)
-            new_lat = math.atan(math.tan(new_lat) * ( c_axis / a_axis ) * ( c_axis / a_axis))
-            latitude = math.degrees(new_lat)
-        except:
-            return latitude
-        return latitude
-
-    @hybrid_method
-    def to_180(self, longitude):
-        if longitude == None:
-            return None
-        if longitude >= 180.0:
-            return longitude - 360.0
-        return longitude
-
-    @hybrid_method
-    def to_positive_west(self, longitude):
-        if longitude == None:
-            return None
-        return 360.0 - longitude
