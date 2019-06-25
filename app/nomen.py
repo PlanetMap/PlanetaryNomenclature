@@ -98,6 +98,8 @@ def feature(input_feature):
 														render_map = render_map)
 	else:
 		abort(404)
+
+	# wire up kml download from primary characteristics
 	
 @router.route('/GIS_Downloads', methods = ['GET'])
 def gisdownloads():

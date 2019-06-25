@@ -58,11 +58,13 @@
           {% if feature.target.targetcoordinates|length > 1 %} 
               <select name="selected_coordinate_system" id="selected_coordinate_system">
                 {% for target_coordinate in feature.target.targetcoordinates %}
-                  <option label="{{ target_coordinate.coordinatesystem.name }}" value="{{ target_coordinate.coordinatesystem.coordinate_system_id }}"></option>
+                  <option label="{{ target_coordinate.coordinatesystem.name }}" 
+                          value="{{ target_coordinate.coordinatesystem.coordinate_system_id }}"></option>
                 {% endfor %}
               </select>
           {% else %}
-            <input id="selected_coordinate_system" type="hidden" value="{{ feature.target.targetcoordinates[0].coordinate_system_id }}"> 
+            {% set target_coordinate = feature.target.targetcoordinates[0] %}
+            <input id="selected_coordinate_system" type="hidden" value="{{ target_coordinate.coordinate_system_id }}"> 
             {{ feature.target.targetcoordinates[0].coordinatesystem.name }}
           {% endif %}
         </td>
@@ -72,7 +74,7 @@
         <th>Control Network</th>
         <td>
           {% if feature.featuregeometries|length > 1 %}
-            <select name="selected_control_net" id="selected_control_net" onchange="updateControlNet();">
+            <select name="selected_control_net" id="selected_control_net">
               {% for feature_geometry in feature.featuregeometries %}
                 {% if not feature_geometry.controlnet %}
                   <option value="-1">Unknown</option>
@@ -95,51 +97,72 @@
 
       <!-- display current feature geometry attributes -->
       {% for feature_geometry in feature.featuregeometries %}
-        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
-          <th>Northernmost Latitude</th>
-          <td>
-            {% if feature_geometry.northmostlatitude %}
-              {{ feature_geometry.northmostlatitude|floatformat }} &deg;
-            {% endif %}
-          </td>
-        </tr>
-        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
-          <th>Southernmost Latitude</th>
-          <td>
-            {% if feature_geometry.southmostlatitude %}
-              {{ feature_geometry.southmostlatitude|floatformat }} &deg;
-            {% endif %}
-          </td>
-        </tr>
-        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
-          <th>Easternmost Longitude</th>
-          <td>
-            {% if feature_geometry.eastmostlongitude %}
-              {{ feature_geometry.eastmostlongitude|floatformat }} &deg;
-            {% endif %}
-          </td>
-        </tr>
-        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
-          <th>Westernmost Longitude</th>
-          <td>
-            {% if feature_geometry.westmostlongitude %}
-              {{ feature_geometry.westmostlongitude|floatformat }} &deg;
-            {% endif %}
-          </td>
-        </tr>
-        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
-          <th>Diameter</th>
-          <td>{{ feature_geometry.diameter|floatformat }}<span class="units">km</span></td>
-        </tr>
-        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
-        {% set center = feature_geometry.to_shape(feature_geometry.center_point) %}
-          <th>Center Latitude</th>
-          <td>{{ center.y|floatformat }}  &deg;</td>
-        </tr>
-        <tr class="geom {{ feature_geometry.feature_geometry_id }}">
-          <th>Center Longitude</th>
-          <td>{{ center.x|floatformat }} &deg;</td>
-        </tr>
+        {% for target_coordinate in feature.target.targetcoordinates %}
+          <tr class="geometry geom-{{ feature_geometry.feature_geometry_id }} cs-{{ target_coordinate.coordinate_system_id }} hidden">
+            <th>Northernmost Latitude</th>
+            <td>
+              {% if feature_geometry.northmostlatitude %}
+                {% set north_lat = feature_geometry.northmostlatitude %}
+                {% set north_lat = feature_geometry.to_graphic(north_lat) if target_coordinate.coordinatesystem.is_planetographic else north_lat %}
+                {{ north_lat|floatformat }} &deg;
+              {% endif %}
+            </td>
+          </tr>
+          <tr class="geometry geom-{{ feature_geometry.feature_geometry_id }} cs-{{ target_coordinate.coordinate_system_id }} hidden">
+            <th>Southernmost Latitude</th>
+            <td>
+              {% if feature_geometry.southmostlatitude %}
+                {% set south_lat = feature_geometry.southmostlatitude %}
+                {% set south_lat = feature_geometry.to_graphic(south_lat) if target_coordinate.coordinatesystem.is_planetographic else south_lat %}
+                {{ south_lat|floatformat }} &deg;
+              {% endif %}
+            </td>
+          </tr>
+          <tr class="geometry geom-{{ feature_geometry.feature_geometry_id }} cs-{{ target_coordinate.coordinate_system_id }} hidden">
+            <th>Easternmost Longitude</th>
+            <td>
+              {% if feature_geometry.eastmostlongitude %}
+                {% set east_long = feature_geometry.eastmostlongitude %}
+                {% set east_long = feature_geometry.to_180(east_long) if not target_coordinate.coordinatesystem.is_0_360 else east_long %}
+                {% set east_long = feature_geometry.to_positive_west(east_long) if not target_coordinate.coordinatesystem.is_positive_east else east_long %}
+                {{ east_long|floatformat }} &deg;
+              {% endif %}
+            </td>
+          </tr>
+          <tr class="geometry geom-{{ feature_geometry.feature_geometry_id }} cs-{{ target_coordinate.coordinate_system_id }} hidden">
+            <th>Westernmost Longitude</th>
+            <td>
+              {% if feature_geometry.westmostlongitude %}
+                {% set west_long = feature_geometry.westmostlongitude %}
+                {% set west_long = feature_geometry.to_180(west_long) if not target_coordinate.coordinatesystem.is_0_360 else west_long %}
+                {% set west_long = feature_geometry.to_positive_west(west_long) if not target_coordinate.coordinatesystem.is_positive_east else west_long%}
+                {{ west_long|floatformat }} &deg;
+              {% endif %}
+            </td>
+          </tr>
+          <tr class="geometry geom-{{ feature_geometry.feature_geometry_id }} cs-{{ target_coordinate.coordinate_system_id }} hidden">
+            <th>Diameter</th>
+            <td>{{ feature_geometry.diameter|floatformat }}<span class="units"> km</span></td>
+          </tr>
+          <tr class="geometry geom-{{ feature_geometry.feature_geometry_id }} cs-{{ target_coordinate.coordinate_system_id }} hidden">
+          {% set center_shape = feature_geometry.to_shape(feature_geometry.center_point) %}
+            <th>Center Latitude</th>
+            <td>
+              {% set center_lat = center_shape.y %}
+              {% set center_lat = feature_geometry.to_graphic(center_lat) if target_coordinate.coordinatesystem.is_planetographic else center_lat %}
+              {{ center_lat|floatformat }} &deg;
+            </td>
+          </tr>
+          <tr class="geometry geom-{{ feature_geometry.feature_geometry_id }} cs-{{ target_coordinate.coordinate_system_id }} hidden">
+            <th>Center Longitude</th>
+            <td>
+              {% set center_long = center_shape.x %}
+              {% set center_long = feature_geometry.to_180(center_long) if not target_coordinate.coordinatesystem.is_0_360 else center_long %}
+              {% set center_long = feature_geometry.to_positive_west(center_long) if not target_coordinate.coordinatesystem.is_positive_east else center_long %}
+              {{ center_long|floatformat }} &deg;
+            </td>
+          </tr>
+        {% endfor %}
       {% endfor %}
        
 
@@ -178,7 +201,8 @@
           {% elif not current_feature.quad_link %}
             <span title="{{ current_feature.quad_name }}">{{ current_feature.quad_code }}</span>
           {% else %}
-            <span title="{{ current_feature.quad_name }}">{{ current_feature.quad_code }}</span> [<a href="{{ current_feature.quad_link }}" target="_new" title="PDF map of this quad">pdf</a>]
+            <span title="{{ current_feature.quad_name }}">{{ current_feature.quad_code }}</span> 
+            [<a href="{{ current_feature.quad_link }}" target="_new" title="PDF map of this quad">pdf</a>]
           {% endif %}
           </td>
         </td>
@@ -223,10 +247,10 @@
         <td>{{ feature.updated_on|datetimeformat }}</td>
       </tr>
 
-      {% if feature.parent %}
+      {% if feature.parentfeature %}
         <tr>
           <th>Parent Feature</th>
-          <td><a href="/Feature/{{ feature.parent.feature_id }}">{{ feature.parent.name }}</a></td>  
+          <td><a href="/Feature/{{ feature.parentfeature.feature_id }}">{{ feature.parentfeature.name }}</a></td>  
         </tr>
       {% endif %}
 
@@ -290,20 +314,14 @@
      
     // draw AstroMap on window load and coordinate system change
     $(document).ready( function() {
-      updateControlNet();
+      updateCoordinates();
 
       if (renderMap) {
         drawAstroMap();
       }
 
-      $(document).on('change', '#selected_control_net', function() {
-        updateControlNet();
-        if (renderMap) {
-          redrawMap();
-        }       
-      });
-
-      $(document).on('change', '#selected_coordinate_system', function() {
+      $(document).on('change', '#selected_control_net, #selected_coordinate_system', function() {
+        updateCoordinates();
         if (renderMap) {
           redrawMap();
         }       
@@ -318,10 +336,11 @@
         drawAstroMap();   
     }
 
-    function updateControlNet() {
-      $('tr.geom').hide();
-      var value_of_select = $('#selected_control_net').val();
-      $('tr.geom.' + value_of_select).show();
+    function updateCoordinates() {
+      $('tr.geometry').addClass('hidden');
+      var coordinate_value = $('#selected_coordinate_system').val();
+      var controlnet_value = $('#selected_control_net').val();
+      $('tr.geom-' + controlnet_value + '.cs-' + coordinate_value).removeClass('hidden');
     }
 
     function drawAstroMap() {
@@ -401,8 +420,8 @@
       {% for feature_geometry in feature.featuregeometries %}
         {% if feature_geometry.controlnet %}
           if ($('#selected_control_net').val() === '{{ feature_geometry.feature_geometry_id|tojson }}') {
-            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.center_wkt }}', null, 'purple', 'footprint', true, false);
-            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.geometry_wkt }}', null, 'green', 'footprint', true, false);
+            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.to_wkt(feature_geometry.center_point) }}', null, 'purple', 'footprint', true, false);
+            astroMap.vectorDrawer.drawAndStore('{{ feature_geometry.to_wkt(feature_geometry.geometry) }}', null, 'green', 'footprint', true, false);
           }
         {% endif %}
       {% endfor %}
@@ -414,7 +433,7 @@
       {% if feature.featuregeometries[0].northmostlatitude %}
         {% if feature.featuregeometries[0].northmostlatitude > 70 and 
               feature.featuregeometries[0].southmostlatitude > 70 %}
-              astroMap.switchProject('north-polar stereographic');
+              astroMap.switchProjection('north-polar stereographic');
         {% endif %}
         {% if feature.featuregeometries[0].northmostlatitude < -70 and
               feature.featuregeometries[0].southmostlatitude < -70 %}
