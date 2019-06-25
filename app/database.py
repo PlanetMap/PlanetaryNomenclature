@@ -37,7 +37,7 @@ class GeometricBase(db.Model):
 
     @classmethod
     def to_wkt(cls, db_geometry):
-        return db_geometry.to_shape.to_wkt()
+        return to_shape(db_geometry).to_wkt()
 
     @classmethod
     def to_graphic(cls, latitude):
@@ -141,7 +141,7 @@ class Feature(Base):
     target              = relationship('Target')
     featurereference    = relationship('FeatureReference')
     approvalstatus      = relationship('ApprovalStatus')
-    parentfeature       = relationship('Feature', remote_side=feature_id)
+    parentfeature       = relationship('Feature', remote_side=feature_id, back_populates='childfeatures')
     childfeatures       = relationship('Feature')
 
     @hybrid_property

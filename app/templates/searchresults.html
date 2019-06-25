@@ -28,6 +28,10 @@
     </form>
   </div>
 
+  <p><em> All search result latitudes are
+    {% if is_planetographic %} planetographic {% else %} planetocentric {% endif %}
+  </em></p>
+
   {% if results %}
     <span class="pager">
       <button class="first" alt="first page" title="first page"><<</button>
